@@ -98,7 +98,7 @@ export default class Request {
   async disableWifi(headers: LoginResponseType, wifis: any[]): Promise<void> {
     wifis.forEach(async (wifi) => {
       const formdata = new FormData();
-      formdata.append("SSID", wifi.data.SSID);
+      formdata.append("SSID", `${wifi.data?.SSID} - DISABLED`);
       formdata.append("SSIDEnable", "false");
 
       const response = await axios.post(`/api/v1/wifi/${wifi.wifiId}`, formdata, {

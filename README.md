@@ -31,3 +31,6 @@ npm start -- -h
 ts-node src/index.ts -H 192.168.0.1 -u user -p pass
 ts-node src/index.ts -h
 ```
+
+### NOTE
+After modem restart, you need to run this tool again.
