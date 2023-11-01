@@ -26,7 +26,7 @@ npm start -- -H 192.168.0.1 -u user -p pass
 npm start -- -h
 ```
 
-### Using ``ts-node``
+### Using ``ts-node``
 ```bash
 ts-node src/index.ts -H 192.168.0.1 -u user -p pass
 ts-node src/index.ts -h
