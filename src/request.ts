@@ -1,6 +1,7 @@
 import axios from "axios";
 import FormData from "form-data";
 import { defaultHeaders, httpsAgent } from "./utils/http-utils";
+import { pick } from "lodash";
 
 export type SaltLoginType = { salt: string, saltwebui: string, cookies: string }
 
@@ -96,22 +97,30 @@ export default class Request {
   }
 
   async disableWifi(headers: LoginResponseType, wifis: any[]): Promise<void> {
-    wifis.forEach(async (wifi) => {
-      const formdata = new FormData();
-      formdata.append("SSID", `${wifi.data?.SSID} - DISABLED`);
-      formdata.append("SSIDEnable", "false");
+    if (!wifis || !wifis.length) return;
 
-      const response = await axios.post(`/api/v1/wifi/${wifi.wifiId}`, formdata, {
-        headers: {
-          ...formdata.getHeaders(),
-          ...defaultHeaders(headers.xCsrfToken),
-          "Cookie": headers.cookies
-        },
-        ...httpsAgent
-      });
+    const formdata = new FormData();
 
-      console.log("DISABLE WIFI RESPONSE:", response.data);
+    wifis.forEach((wifi, index) =>
+      Object.keys(wifi.data).forEach(key => {
+        let value = wifi.data[key];
+        if ((key === "SSID") && !value.toLowerCase().includes("disabled"))
+          value = `${value} - DISABLED`;
+
+        formdata.append((wifis.length === 1) ? key : `${wifi.wifiId}[${key}]`, value);
+      })
+    );
+
+    const response = await axios.post(`/api/v1/wifi/${wifis.map(w => w.wifiId)}`, formdata, {
+      headers: {
+        ...formdata.getHeaders(),
+        ...defaultHeaders(headers.xCsrfToken),
+        "Cookie": headers.cookies
+      },
+      ...httpsAgent
     });
+
+    console.log("DISABLE WIFI RESPONSE:", response.data);
   }
 
   async getSystem(headers: LoginResponseType): Promise<any> {
