@@ -1,14 +1,14 @@
 import axios from "axios";
 import FormData from "form-data";
 import { defaultHeaders, httpsAgent } from "./utils/http-utils";
-import { pick } from "lodash";
+import { pick, replace } from "lodash";
 
 export type SaltLoginType = { salt: string, saltwebui: string, cookies: string }
 
 export type LoginResponseType = { xCsrfToken: string, cookies: string }
 
 export default class Request {
-  private readonly _getWifiParts: string = "SSIDEnable,SSIDAdvertisementEnabled,OperatingStandards,SSID,ModeEnabled,EncryptionMethod,KeyPassphrase,WEPKey64b1,WEPKey128b1,RadioEnable,RadiusServerIPAddr,RadiusServerPort,RadiusReAuthInterval,RadiusServerIPAddrSec,RadiusServerPortSec,WPSEnable,ModesSupported,bs_enable";
+  private readonly _getWifiParts: string = "ACLEnable,FilterAsBlackList,ACLTbl,BSSID,SSIDEnable,SSIDAdvertisementEnabled,OperatingStandards,SSID,ModeEnabled,EncryptionMethod,KeyPassphrase,WEPKey64b1,WEPKey128b1,RadioEnable,RadiusServerIPAddr,RadiusServerPort,RadiusReAuthInterval,RadiusServerIPAddrSec,RadiusServerPortSec,WPSEnable,ModesSupported";
 
   constructor(host: string) {
     axios.defaults.baseURL = `https://${host}`;
@@ -93,25 +93,38 @@ export default class Request {
       },
       ...httpsAgent
     });
+
+    console.log("WIFIS:", response.data);
     return response.data;
   }
 
-  async disableWifi(headers: LoginResponseType, wifis: any[]): Promise<void> {
+  async updateWifiSettings(headers: LoginResponseType, wifis: any[], rename: boolean, restore: boolean): Promise<void> {
     if (!wifis || !wifis.length) return;
 
     const formdata = new FormData();
 
-    wifis.forEach((wifi, index) =>
+    wifis.forEach((wifi) =>
+      // iterate keys to set default values
       Object.keys(wifi.data).forEach(key => {
         let value = wifi.data[key];
-        if ((key === "SSID") && !value.toLowerCase().includes("disabled"))
+
+        if (!!rename && (key === "SSID") && !value.toLowerCase().includes("disabled"))
           value = `${value} - DISABLED`;
+
+        if (!!restore && (key === "SSID") && value.toLowerCase().includes("disabled"))
+          value = replace(value, " - DISABLED", "");
+
+        if (["RadioEnable", "SSIDAdvertisementEnabled", "WPSEnable"].includes(key))
+          value = "false";
 
         formdata.append((wifis.length === 1) ? key : `${wifi.wifiId}[${key}]`, value);
       })
     );
 
-    const response = await axios.post(`/api/v1/wifi/${wifis.map(w => w.wifiId)}`, formdata, {
+    formdata.append("WifiEnable", "false");
+    formdata.append("Wifi5Enable", "false");
+
+    const response = await axios.post<any>(`/api/v1/wifi/${wifis.map(w => w.wifiId)},WifiEnable,Wifi5Enable`, formdata, {
       headers: {
         ...formdata.getHeaders(),
         ...defaultHeaders(headers.xCsrfToken),
@@ -120,7 +133,38 @@ export default class Request {
       ...httpsAgent
     });
 
-    console.log("DISABLE WIFI RESPONSE:", response.data);
+    Object.keys(response.data)
+      .filter((wifiId) => !isNaN(parseInt(wifiId)))
+      .forEach(wifiId => {
+        const wasOk = response.data[wifiId].error;
+        console.log(`Update for WiFi [${wifiId}] was [${response.data[wifiId].error}]: ${response.data[wifiId].message} ${!wasOk ? ` || ${JSON.stringify(response.data[wifiId].data)}` : ""}`)
+      });
+  }
+
+  async applyACL(headers: LoginResponseType, wifis: any[]): Promise<void> {
+    if (!wifis || !wifis.length) return;
+
+
+    wifis.forEach(async (wifi) => {
+      const formdata = new FormData();
+
+      formdata.append("ACLEnable", "true");
+      formdata.append("FilterAsBlackList", "false");
+      formdata.append("ACLTbl[0][__id]", "0");
+
+      const response = await axios.post(`/api/v1/wifi/${wifi.wifiId}`, formdata, {
+        headers: {
+          ...formdata.getHeaders(),
+          ...defaultHeaders(headers.xCsrfToken),
+          "Cookie": headers.cookies
+        },
+        ...httpsAgent
+      });
+
+      Object.keys(response.data).forEach(wifiId =>
+        console.log(`ACL Settings for WiFi [${wifiId}] was [${response.data[wifiId].error}]: ${response.data[wifiId].message}`)
+      );
+    });
   }
 
   async getSystem(headers: LoginResponseType): Promise<any> {

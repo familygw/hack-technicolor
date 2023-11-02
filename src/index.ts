@@ -35,6 +35,28 @@ const main = async () => {
       type: "boolean",
       description: "Fuerza actualizar la configuración de todos los wifis."
     })
+    .option("rename", {
+      alias: "r",
+      type: "boolean",
+      conflicts: "restore",
+      description: "Renombra los SSID agregandole '- DISABLED'."
+    })
+    .option("restore", {
+      alias: "R",
+      type: "boolean",
+      conflicts: "rename",
+      description: "Renombra los SSID quitando '- DISABLED' si es necesario."
+    })
+    .option("notUpdate", {
+      alias: "X",
+      type: "boolean",
+      description: "No actualizar las configuraciones WiFi, solo lectura."
+    })
+    .option("notUpdateACL", {
+      alias: "Z",
+      type: "boolean",
+      description: "No actualizar las configuraciones de Control MAC en el WiFi."
+    })
     .help()
     .alias("help", "h")
     .argv;
@@ -65,27 +87,50 @@ const main = async () => {
       .filter((wifiId) => !isNaN(Number(wifiId)))
       .forEach((wifiId) => {
         const ssid = wifis[wifiId];
-        console.log("WIFI ID      : ", wifiId);
-        console.log("WIFI SSID    : ", ssid.data?.SSID);
-        console.log("WIFI ENABLED : ", ssid.data?.SSIDEnable);
+        console.log("WIFI ID        : ", wifiId);
+        console.log("WIFI SSID      : ", ssid.data?.SSID);
+        console.log("WIFI ENABLED   : ", ssid.data?.SSIDEnable);
+        console.log("WIFI BROADCAST : ", ssid.data?.SSIDAdvertisementEnabled);
+        console.log("ACL ENABLED    : ", ssid.data?.ACLEnable);
+        console.log("RADIO ENABLED  : ", ssid.data?.RadioEnable);
         console.log("=======================================================");
       });
+
+    const isPersonalWiFi = (wifi: any): boolean => String(wifi.data?.SSID ?? "").toLowerCase().includes("personal");
 
     // voy a identificar entonces que SSID está "enabled" y así, deshabilitarlo luego
     const enabledWifi = Object.keys(wifis)
       .filter((wifiId) => {
-        const ssid = wifis[wifiId];
-        return !isNaN(parseInt(wifiId)) && ((ssid.data?.SSIDEnable === "true") || !!argv.force || !!argv.forceAll);
+        const wifi = wifis[wifiId];
+        return !isNaN(parseInt(wifiId)) && (
+          ((wifi.data?.SSIDEnable === "true") || isPersonalWiFi(wifi)) ||
+          !!argv.force ||
+          !!argv.forceAll
+        );
       })
-      .map((wifiId) => ({ wifiId, data: pick(wifis[wifiId].data, ["SSID", "SSIDEnable", "SSIDAdvertisementEnabled"]) }))
-      .filter((wifi) => !argv.forceAll ? String(wifi.data?.SSID ?? "").toLowerCase().includes("personal") : true);
+      .map((wifiId) => ({ wifiId, data: pick(wifis[wifiId].data, ["SSID", "SSIDEnable", "SSIDAdvertisementEnabled", "RadioEnable", "WPSEnable"]) }))
+      .filter((wifi) => !argv.forceAll ? isPersonalWiFi(wifi) : true);
 
-    console.log("Enabled Wifi ID: ", enabledWifi);
-    req.disableWifi(res, enabledWifi);
+    console.log("");
+    console.log("Identified WiFi(s) : ", enabledWifi);
+    console.log("");
 
-    // req.getSystem(res);
+    if (!argv.notUpdate) {
+      console.log("Updating WiFi settings...");
+      await req.updateWifiSettings(res, enabledWifi, !!argv.rename, !!argv.restore);
+      console.log("WiFi settings updated.");
+      console.log("");
+
+      if (!argv.notUpdateACL) {
+        console.log("Applying ACL configuration...");
+        await req.applyACL(res, enabledWifi);
+        console.log("ACL configuration applied.");
+      }
+    }
+
+    console.log("");
+    console.log("Done!");
   }
-
 }
 
 main();
