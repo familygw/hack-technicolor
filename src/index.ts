@@ -93,6 +93,10 @@ const main = async () => {
         console.log("WIFI BROADCAST : ", ssid.data?.SSIDAdvertisementEnabled);
         console.log("ACL ENABLED    : ", ssid.data?.ACLEnable);
         console.log("RADIO ENABLED  : ", ssid.data?.RadioEnable);
+        console.log("RADIO POWER    : ", ssid.data?.TransmitPower);
+        console.log("PASSPHRASE     : ", ssid.data?.KeyPassphrase);
+        console.log("MODE ENABLED   : ", ssid.data?.ModeEnabled);
+        console.log("ENCRYPT METHOD : ", ssid.data?.EncryptionMethod);
         console.log("=======================================================");
       });
 
@@ -108,7 +112,7 @@ const main = async () => {
           !!argv.forceAll
         );
       })
-      .map((wifiId) => ({ wifiId, data: pick(wifis[wifiId].data, ["SSID", "SSIDEnable", "SSIDAdvertisementEnabled", "RadioEnable", "WPSEnable"]) }))
+      .map((wifiId) => ({ wifiId, data: pick(wifis[wifiId].data, ["SSID", "SSIDEnable", "SSIDAdvertisementEnabled", "RadioEnable", "WPSEnable", "TransmitPower", "KeyPassphrase", "ModeEnabled", "EncryptionMethod"]) }))
       .filter((wifi) => !argv.forceAll ? isPersonalWiFi(wifi) : true);
 
     console.log("");

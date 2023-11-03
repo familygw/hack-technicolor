@@ -8,10 +8,23 @@ export type SaltLoginType = { salt: string, saltwebui: string, cookies: string }
 export type LoginResponseType = { xCsrfToken: string, cookies: string }
 
 export default class Request {
-  private readonly _getWifiParts: string = "ACLEnable,FilterAsBlackList,ACLTbl,BSSID,SSIDEnable,SSIDAdvertisementEnabled,OperatingStandards,SSID,ModeEnabled,EncryptionMethod,KeyPassphrase,WEPKey64b1,WEPKey128b1,RadioEnable,RadiusServerIPAddr,RadiusServerPort,RadiusReAuthInterval,RadiusServerIPAddrSec,RadiusServerPortSec,WPSEnable,ModesSupported";
+  private readonly _getWifiParts: string = "ACLEnable,FilterAsBlackList,ACLTbl,BSSID,SSIDEnable,SSIDAdvertisementEnabled,OperatingStandards,SSID,ModeEnabled,EncryptionMethod,KeyPassphrase,WEPKey64b1,WEPKey128b1,RadioEnable,RadiusServerIPAddr,RadiusServerPort,RadiusReAuthInterval,RadiusServerIPAddrSec,RadiusServerPortSec,WPSEnable,ModesSupported,TransmitPower";
 
   constructor(host: string) {
     axios.defaults.baseURL = `https://${host}`;
+  }
+
+  private _generateRandomPassword(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&*+,-./:=?@^_~';
+    const passwordLength = Math.floor(Math.random() * (32 - 16 + 1)) + 16; // longitud aleatoria entre 16 y 32
+    let randomPassword = "";
+
+    for (let i = 0; i < passwordLength; i++) {
+      const randomIndex = Math.floor(Math.random() * chars.length);
+      randomPassword += chars[randomIndex];
+    }
+
+    return randomPassword;
   }
 
   private _parseCookies(cookies: string[]): string[] {
@@ -106,14 +119,33 @@ export default class Request {
       Object.keys(wifi.data).forEach(key => {
         let value = wifi.data[key];
 
-        if (!!rename && (key === "SSID") && !value.toLowerCase().includes("disabled"))
-          value = `${value} - DISABLED`;
+        switch (key) {
+          case "SSID":
+            if (!!rename && !value.toLowerCase().includes("disabled"))
+              value = `${value} - DISABLED`;
 
-        if (!!restore && (key === "SSID") && value.toLowerCase().includes("disabled"))
-          value = replace(value, " - DISABLED", "");
-
-        if (["RadioEnable", "SSIDAdvertisementEnabled", "WPSEnable"].includes(key))
-          value = "false";
+            if (!!restore && value.toLowerCase().includes("disabled"))
+              value = replace(value, " - DISABLED", "");
+            break;
+          case "WPSEnable":
+          case "SSIDEnable":
+          case "RadioEnable":
+          case "SSIDAdvertisementEnabled":
+            value = "false";
+            break;
+          case "TransmitPower":
+            value = "25";
+            break;
+          case "KeyPassphrase":
+            value = this._generateRandomPassword();
+            break;
+          case "ModeEnabled":
+            value = "WPA2-Personal";
+            break;
+          case "EncryptionMethod":
+            value = "AES";
+            break;
+        }
 
         formdata.append((wifis.length === 1) ? key : `${wifi.wifiId}[${key}]`, value);
       })
@@ -135,7 +167,7 @@ export default class Request {
       .filter((wifiId) => !isNaN(parseInt(wifiId)))
       .forEach(wifiId => {
         const wasOk = response.data[wifiId].error;
-        console.log(`Update for WiFi [${wifiId}] was [${response.data[wifiId].error}]: ${response.data[wifiId].message} ${!wasOk ? ` || ${JSON.stringify(response.data[wifiId].data)}` : ""}`)
+        console.log(`Update for WiFi [${wifiId}] was [${response.data[wifiId].error}]: ${response.data[wifiId].message} ${!(wasOk === "ok") ? ` || ${JSON.stringify(response.data[wifiId].data)}` : ""}`)
       });
   }
 
