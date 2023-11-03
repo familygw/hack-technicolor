@@ -38,7 +38,6 @@ export default class Request {
     const cookieArray = this._parseCookies(response.headers["set-cookie"] ?? []);
     const cookies = cookieArray.join("; ").concat(";");
 
-    console.log("SALT LOGIN DATA:", response.data);
     return { salt, saltwebui, cookies };
   }
 
@@ -94,7 +93,6 @@ export default class Request {
       ...httpsAgent
     });
 
-    console.log("WIFIS:", response.data);
     return response.data;
   }
 
