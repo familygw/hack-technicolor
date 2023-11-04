@@ -109,6 +109,29 @@ export default class Request {
     return response.data;
   }
 
+  async toggleWifiSettings(headers: LoginResponseType, wifiId: number, enable: boolean): Promise<void> {
+    if (!wifiId) return;
+
+    const formdata = new FormData();
+    ["SSIDEnable", "RadioEnable", "SSIDAdvertisementEnabled"].forEach(key => formdata.append(key, enable ? "true" : "false"));
+
+    const response = await axios.post<any>(`/api/v1/wifi/${wifiId}`, formdata, {
+      headers: {
+        ...formdata.getHeaders(),
+        ...defaultHeaders(headers.xCsrfToken),
+        "Cookie": headers.cookies
+      },
+      ...httpsAgent
+    });
+
+    Object.keys(response.data)
+      .filter((wifiId) => !isNaN(parseInt(wifiId)))
+      .forEach(wifiId => {
+        const wasOk = response.data[wifiId].error;
+        console.log(`Update for WiFi [${wifiId}] was [${response.data[wifiId].error}]: ${response.data[wifiId].message} ${!(wasOk === "ok") ? ` || ${JSON.stringify(response.data[wifiId].data)}` : ""}`)
+      });
+  }
+
   async updateWifiSettings(headers: LoginResponseType, wifis: any[], rename: boolean, restore: boolean): Promise<void> {
     if (!wifis || !wifis.length) return;
 

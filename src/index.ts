@@ -57,6 +57,16 @@ const main = async () => {
       type: "boolean",
       description: "No actualizar las configuraciones de Control MAC en el WiFi."
     })
+    .option("disable", {
+      type: "number",
+      conflicts: "enable",
+      description: "Deshabilitar WiFi"
+    })
+    .option("enable", {
+      type: "number",
+      conflicts: "disable",
+      description: "Habilitar WiFi"
+    })
     .help()
     .alias("help", "h")
     .argv;
@@ -119,7 +129,12 @@ const main = async () => {
     console.log("Identified WiFi(s) : ", enabledWifi);
     console.log("");
 
-    if (!argv.notUpdate) {
+    if (argv.disable || argv.enable) {
+      console.log(`${argv.enable ? "Enabling" : "Disabling"} WiFi settings...`);
+      console.log("All other arguments are being ignored.");
+
+      await req.toggleWifiSettings(res, argv.enable ?? argv.disable ?? 0, !!argv.enable);
+    } else if (!argv.notUpdate) {
       console.log("Updating WiFi settings...");
       await req.updateWifiSettings(res, enabledWifi, !!argv.rename, !!argv.restore);
       console.log("WiFi settings updated.");
