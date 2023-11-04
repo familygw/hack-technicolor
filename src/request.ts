@@ -16,7 +16,7 @@ export default class Request {
 
   private _generateRandomPassword(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!#$%&*+,-./:=?@^_~';
-    const passwordLength = Math.floor(Math.random() * (32 - 16 + 1)) + 16; // longitud aleatoria entre 16 y 32
+    const passwordLength = Math.floor(Math.random() * (32 - 16 + 1)) + 16; // random length between 16 and 32
     let randomPassword = "";
 
     for (let i = 0; i < passwordLength; i++) {
@@ -89,7 +89,7 @@ export default class Request {
   }
 
   async getWifis(headers: LoginResponseType, ids: number[] = [0, 1, 2, 9]): Promise<any> {
-    // necesito hacer esta llamada al menú, de otra forma la API no reconoce mis credenciales
+    // this call is required in order to the API recognize my credentials
     const menu = await axios.get("/api/v1/session/menu", {
       headers: {
         ...defaultHeaders(headers.xCsrfToken),
@@ -221,7 +221,7 @@ export default class Request {
   }
 
   async getSystem(headers: LoginResponseType): Promise<any> {
-    // necesito hacer esta llamada al menú, de otra forma la API no reconoce mis credenciales
+    // this call is required in order to the API recognize my credentials
     const response = await axios.get("/api/v1/session/log", {
       headers: {
         ...defaultHeaders(headers.xCsrfToken),

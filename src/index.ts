@@ -5,8 +5,8 @@ import Request from "./request";
 import { doPbkdf2NotCoded } from "./utils/crypto-utils";
 
 const main = async () => {
-  // voy a identificar dos argumentos, --user y --password
-  // luego voy a grabar los valores en variables para usarlas luego
+  // I will identify two arguments, --user and --password
+  // then I will store the values in variables to use later
   const argv = await yargs(hideBin(process.argv))
     .option("host", {
       alias: "H",
@@ -92,7 +92,7 @@ const main = async () => {
 
     console.log("");
 
-    // voy a identificar los wifis ahora  
+    // I am going to identify the WiFis now
     Object.keys(wifis)
       .filter((wifiId) => !isNaN(Number(wifiId)))
       .forEach((wifiId) => {
