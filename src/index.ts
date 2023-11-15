@@ -112,7 +112,7 @@ const main = async () => {
 
     const isPersonalWiFi = (wifi: any): boolean => String(wifi.data?.SSID ?? "").toLowerCase().includes("personal");
 
-    // voy a identificar entonces que SSID está "enabled" y así, deshabilitarlo luego
+    // I will identify which SSID is "enabled" and thus, disable it later
     const enabledWifi = Object.keys(wifis)
       .filter((wifiId) => {
         const wifi = wifis[wifiId];
@@ -135,16 +135,16 @@ const main = async () => {
 
       await req.toggleWifiSettings(res, argv.enable ?? argv.disable ?? 0, !!argv.enable);
     } else if (!argv.notUpdate) {
-      console.log("Updating WiFi settings...");
-      await req.updateWifiSettings(res, enabledWifi, !!argv.rename, !!argv.restore);
-      console.log("WiFi settings updated.");
-      console.log("");
-
       if (!argv.notUpdateACL) {
         console.log("Applying ACL configuration...");
         await req.applyACL(res, enabledWifi);
         console.log("ACL configuration applied.");
+        console.log("");
       }
+
+      console.log("Updating WiFi settings...");
+      await req.updateWifiSettings(res, enabledWifi, !!argv.rename, !!argv.restore);
+      console.log("WiFi settings updated.");
     }
 
     console.log("");
