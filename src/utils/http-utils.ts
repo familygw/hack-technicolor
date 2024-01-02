@@ -8,7 +8,7 @@ export const httpsAgent: { httpsAgent: https.Agent } = {
 
 export const defaultHeaders = (csrf: string = "") => ({
   "Accept": "*/*",
-  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+  "User-Agent": "Personal WiFi (nothing is free)",
   "X-Requested-With": "XMLHttpRequest",
   "X-CSRF-TOKEN": csrf,
   "Referer": "https://192.168.100.1/",
