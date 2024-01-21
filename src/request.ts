@@ -132,6 +132,29 @@ export default class Request {
       });
   }
 
+  async turnOn24WiFi(headers: LoginResponseType): Promise<void> {
+    const formdata = new FormData();
+
+    formdata.append("SSIDEnable", "true");
+    formdata.append("RadioEnable", "true");
+
+    const response = await axios.post<any>(`/api/v1/wifi/1,WifiEnable`, formdata, {
+      headers: {
+        ...formdata.getHeaders(),
+        ...defaultHeaders(headers.xCsrfToken),
+        "Cookie": headers.cookies
+      },
+      ...httpsAgent
+    });
+
+    Object.keys(response.data)
+      .filter((wifiId) => !isNaN(parseInt(wifiId)))
+      .forEach(wifiId => {
+        const wasOk = response.data[wifiId].error;
+        console.log(`Update for WiFi [${wifiId}] was [${response.data[wifiId].error}]: ${response.data[wifiId].message} ${!(wasOk === "ok") ? ` || ${JSON.stringify(response.data[wifiId].data)}` : ""}`)
+      });
+  }
+
   async updateWifiSettings(headers: LoginResponseType, wifis: any[], rename: boolean, restore: boolean): Promise<void> {
     if (!wifis || !wifis.length) return;
 

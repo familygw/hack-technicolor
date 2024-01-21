@@ -143,6 +143,7 @@ const main = async () => {
       }
 
       console.log("Updating WiFi settings...");
+      await req.turnOn24WiFi(res);
       await req.updateWifiSettings(res, enabledWifi, !!argv.rename, !!argv.restore);
       console.log("WiFi settings updated.");
     }
