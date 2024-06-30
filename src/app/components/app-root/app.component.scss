@@ -1,0 +1,73 @@
+@use "sass:map";
+@import "bootstrap/scss/bootstrap";
+
+$border-style: solid 1px var(--bs-border-color);
+
+@mixin rounded($radius: 0.625rem, $sides: all) {
+  border: $border-style;
+  @if $sides == all {
+    border-radius: $radius;
+  } @else {
+    @each $side in $sides {
+      border-#{$side}-radius: $radius;
+    }
+  }
+}
+
+:host {
+  height: 100vh;
+
+  .main-content {
+    gap: map.get($spacers, 4);
+    width: 100vw;
+    height: calc(100vh - 2.375rem); // remove the height of the titlebar
+    display: flex;
+    flex-direction: row;
+
+    .sidebar {
+      width: 15rem;
+      display: flex;
+      flex-direction: column;
+
+      > label {
+        font-size: 0.75rem;
+        & + input {
+          color: var(--bs-body-color);
+          padding: map.get($spacers, 2) map.get($spacers, 3);
+          background-color: var(--bs-body-bg);
+
+          @include rounded(0.5rem);
+
+          &:not(:last-of-type) {
+            margin-bottom: map.get($spacers, 4);
+          }
+        }
+      }
+
+      button {
+        margin-top: map.get($spacers, 4);
+      }
+    }
+
+    .content {
+      gap: map.get($spacers, 3);
+      flex: 1;
+      display: flex;
+      overflow-y: auto;
+      flex-direction: column;
+      @include rounded(0.5rem);
+
+      > div.wifis-container {
+        gap: map.get($spacers, 4);
+        display: flex;
+        flex-wrap: wrap;
+
+        > .mat-mdc-card {
+          flex: 1 1 300px;
+          display: flex;
+          flex-grow: 0;
+        }
+      }
+    }
+  }
+}

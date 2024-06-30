@@ -1,0 +1,3 @@
+<span class="chip" [ngClass]="{'enabled': !!this.enabled}"></span>
+<span *ngIf="!this.enabled">Not enabled</span>
+<span *ngIf="!!this.enabled">Enabled</span>

@@ -1,0 +1,4 @@
+<span class="chip" [ngClass]="{'connected': !!this.connected, 'connecting': !!this.connecting}"></span>
+<span *ngIf="!this.connected && !this.connecting">Not connected</span>
+<span *ngIf="!this.connecting && !!this.connected">Connected</span>
+<span *ngIf="!!this.connecting">Conecting...</span>

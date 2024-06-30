@@ -1,0 +1,56 @@
+@import "bootstrap/scss/bootstrap";
+@import "@angular/material/prebuilt-themes/azure-blue.css";
+
+body,
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+html {
+  font-size: 14px;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont;
+}
+
+body {
+  --app-background-color: #ffffff4d;
+  --app-foreground-color: #282c34;
+  --bs-body-color: var(--app-foreground-color);
+  --bs-body-bg: var(--app-background-color);
+  --mat-form-field-subscript-text-size: 10px;
+  -webkit-user-select: none;
+  user-select: none;
+  overflow: hidden;
+
+  background-color: var(--app-background-color);
+  color: var(--app-foreground-color);
+}
+
+body[theme="dark"] {
+  --bs-border-color: #696e7a;
+  --app-background-color: #282c344d;
+  --app-foreground-color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    --app-background-color: #282c344d;
+    --app-foreground-color: #fff;
+
+    --mat-card-subtitle-text-color: #fff;
+    --mdc-elevated-card-container-color: #3b3d43;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  body {
+    --app-background-color: #ffffff4d;
+    --app-foreground-color: #282c34;
+  }
+}

@@ -1,0 +1,36 @@
+<title-bar title="Technicolor Hack"></title-bar>
+<div class="main-content p-4">
+  <div class="sidebar" [formGroup]="this.formGroup">
+    <label>Modem IP</label>
+    <input matInput formControlName="modemIp" />
+    <label>Username</label>
+    <input matInput formControlName="username" />
+    <label>Password</label>
+    <input matInput type="password" formControlName="password" />
+
+    <button class="btn btn-success" [disabled]="!this.formGroup.valid || !!this.connected || !!this.connecting" (click)="this.doLogin()">Connect</button>
+  </div>
+  <div class="content p-3">
+    <connection-status [connected]="this.connected" [connecting]="this.connecting"></connection-status>
+    <div class="wifis-container">
+      <mat-card *ngFor="let wifi of wifiList">
+        <mat-card-header>
+          <mat-card-title>{{ wifi.data.SSID }}</mat-card-title>
+          <mat-card-subtitle>
+            <wifi-status [enabled]="wifi.data.SSIDEnable"></wifi-status>
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div>ACL Enabled: {{ wifi.data.ACLEnable }}</div>
+          <div>Mode Enabled: {{ wifi.data.ModeEnabled }}</div>
+          <div>Radio Enabled: {{ wifi.data.RadioEnable }}</div>
+        </mat-card-content>
+        <mat-card-actions class="d-flex gap-3">
+          <button *ngIf="!!wifi.data.SSIDEnable" class="btn btn-danger" (click)="this.toggleWifi(wifi.wifiId, wifi.data.SSID, false)">Disable</button>
+          <button *ngIf="!wifi.data.SSIDEnable" class="btn btn-warning" (click)="this.toggleWifi(wifi.wifiId, wifi.data.SSID, false)">Update</button>
+          <button *ngIf="!wifi.data.SSIDEnable" class="btn btn-success" (click)="this.toggleWifi(wifi.wifiId, wifi.data.SSID, true)">Enable</button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+</div>

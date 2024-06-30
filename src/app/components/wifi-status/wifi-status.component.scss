@@ -1,0 +1,20 @@
+@use "sass:map";
+@import "bootstrap/scss/bootstrap";
+
+:host {
+  gap: map.get($spacers, 3);
+  display: inline-flex;
+  align-items: center;
+
+  .chip {
+    width: 1rem;
+    height: 1rem;
+    display: inline-block;
+    border-radius: 50%;
+    background-color: $danger;
+
+    &.enabled {
+      background-color: $success;
+    }
+  }
+}
