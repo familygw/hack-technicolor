@@ -1,20 +1,31 @@
 {
   "name": "technicolor-hack",
-  "version": "0.0.0",
+  "version": "0.0.1",
+  "main": "dist/electron-main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "electron:build": "tsc -p tsconfig.electron.json",
-    "electron:prestart": "npm run build && npm run electron:build",
-    "electron:run": "npm run electron:prestart && electron dist/electron/main.js",
+    "angular:build": "ng build -c 'production' --output-path=./dist",
+    "electron:build": "tsc -p tsconfig.electron.json && electron-builder",
+    "electron:package": "npm run \"angular:build\" && npm run electron:build",
     "dev:watchts": "tsc -p tsconfig.electron.json -w",
     "dev:start": "cross-env BROWSER=none npm start",
-    "dev:run": "wait-on http://localhost:4200 && electron dist/electron/main.js",
+    "dev:run": "wait-on http://localhost:4200 && electron dist/electron-main.js",
     "dev": "concurrently \"npm run dev:watchts\" \"npm run dev:start\" \"npm run dev:run\""
   },
   "private": true,
+  "build": {
+    "appId": "com.classoft.hacks.technicolor",
+    "directories": {
+      "output": "release",
+      "buildResources": "dist"
+    },
+    "files": [
+      "dist/**/*"
+    ]
+  },
   "dependencies": {
     "@angular/animations": "^18.0.5",
     "@angular/common": "^18.0.5",

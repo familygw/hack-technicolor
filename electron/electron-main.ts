@@ -15,7 +15,7 @@ const createWindow: () => BrowserWindow = (): BrowserWindow => {
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
-      devTools: !app.isPackaged,
+      devTools: true, //!app.isPackaged,
       webSecurity: false,
       nodeIntegration: true,
       contextIsolation: true
@@ -33,7 +33,7 @@ const createWindow: () => BrowserWindow = (): BrowserWindow => {
   !isMacOS && win.setBackgroundMaterial("acrylic");
 
   if (app.isPackaged)
-    win.loadFile(path.join(__dirname, "../index.html"));
+    win.loadFile(path.join(__dirname, "./browser/index.html"));
   else {
     win.loadURL("http://localhost:4200");
     win.webContents.openDevTools();
