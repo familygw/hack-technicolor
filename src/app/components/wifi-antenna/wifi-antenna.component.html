@@ -1,0 +1,19 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>{{ wifiInfo.data.SSID }}</mat-card-title>
+    <mat-card-subtitle>
+      <wifi-status [enabled]="wifiInfo.data.SSIDEnable"></wifi-status>
+    </mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <div>BSSID: {{wifiInfo.data.BSSID}}</div>
+    <div>ACL Enabled: {{ wifiInfo.data.ACLEnable }}</div>
+    <div>Mode Enabled: {{ wifiInfo.data.ModeEnabled }}</div>
+    <div>Radio Enabled: {{ wifiInfo.data.RadioEnable }}</div>
+  </mat-card-content>
+  <mat-card-actions class="d-flex gap-3">
+    <button *ngIf="!!wifiInfo.data.SSIDEnable" class="btn btn-danger" (click)="this.toggleWifi.emit({ wifiInfo, action: false })">Disable</button>
+    <button *ngIf="!wifiInfo.data.SSIDEnable" class="btn btn-warning" (click)="this.toggleWifi.emit({ wifiInfo, action: false })">Update</button>
+    <button *ngIf="!wifiInfo.data.SSIDEnable" class="btn btn-success" (click)="this.toggleWifi.emit({ wifiInfo, action: true })">Enable</button>
+  </mat-card-actions>
+</mat-card>

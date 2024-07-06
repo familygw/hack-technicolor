@@ -12,25 +12,9 @@
   </div>
   <div class="content p-3">
     <connection-status [connected]="this.connected" [connecting]="this.connecting"></connection-status>
+    <mat-divider></mat-divider>
     <div class="wifis-container">
-      <mat-card *ngFor="let wifi of wifiList">
-        <mat-card-header>
-          <mat-card-title>{{ wifi.data.SSID }}</mat-card-title>
-          <mat-card-subtitle>
-            <wifi-status [enabled]="wifi.data.SSIDEnable"></wifi-status>
-          </mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <div>ACL Enabled: {{ wifi.data.ACLEnable }}</div>
-          <div>Mode Enabled: {{ wifi.data.ModeEnabled }}</div>
-          <div>Radio Enabled: {{ wifi.data.RadioEnable }}</div>
-        </mat-card-content>
-        <mat-card-actions class="d-flex gap-3">
-          <button *ngIf="!!wifi.data.SSIDEnable" class="btn btn-danger" (click)="this.toggleWifi(wifi.wifiId, wifi.data.SSID, false)">Disable</button>
-          <button *ngIf="!wifi.data.SSIDEnable" class="btn btn-warning" (click)="this.toggleWifi(wifi.wifiId, wifi.data.SSID, false)">Update</button>
-          <button *ngIf="!wifi.data.SSIDEnable" class="btn btn-success" (click)="this.toggleWifi(wifi.wifiId, wifi.data.SSID, true)">Enable</button>
-        </mat-card-actions>
-      </mat-card>
+      <wifi-antenna *ngFor="let wifi of this.wifiList" [wifiInfo]="wifi" (toggleWifi)="this.toggleWifi($event)"></wifi-antenna>
     </div>
   </div>
 </div>

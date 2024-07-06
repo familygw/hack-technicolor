@@ -1,4 +1,4 @@
-import { NgFor, NgIf } from "@angular/common";
+import { NgFor } from "@angular/common";
 import { AfterViewInit, Component } from "@angular/core";
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
@@ -13,23 +13,25 @@ import { THackService } from "../../services/thack.service";
 import { startWithTap } from "../../utils/rxjs.utils";
 import { ConnectionStatusComponent } from "../connection-status/connection-status.component";
 import { TitleBarComponent } from "../title-bar/title-bar.component";
-import { WiFiStatusComponent } from "../wifi-status/wifi-status.component";
+import { WifiAntennaComponent } from "../wifi-antenna/wifi-antenna.component";
+import { ToggleWiFiEvent } from "../../models/thack.model";
+import { MatDividerModule } from "@angular/material/divider";
 
 @Component({
   selector: "app-root",
   standalone: true,
   imports: [
-    NgIf,
     NgFor,
     RouterOutlet,
     MatCardModule,
     MatInputModule,
+    MatDividerModule,
     MatButtonModule,
     MatSnackBarModule,
     TitleBarComponent,
     MatFormFieldModule,
     ReactiveFormsModule,
-    WiFiStatusComponent,
+    WifiAntennaComponent,
     ConnectionStatusComponent
   ],
   templateUrl: "./app.component.html",
@@ -84,8 +86,8 @@ export class AppComponent implements AfterViewInit {
       });
   }
 
-  toggleWifi(wifiId: number, wifiName: string, enable: boolean): void {
-    this.thackService.toggleWifi(wifiId, wifiName, enable)
+  toggleWifi(event: ToggleWiFiEvent): void {
+    this.thackService.toggleWifi(event.wifiInfo.wifiId, event.wifiInfo.data.SSID, event.action)
       .pipe(
         first(),
         switchMap(() => this.thackService.doLoadWifis())
