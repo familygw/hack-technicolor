@@ -3,6 +3,7 @@
   "compilerOptions": {
     "module": "CommonJS",
     "outDir": "./dist",
+    "rootDir": "./electron",
     "noEmit": false,
     "sourceMap": false
   },

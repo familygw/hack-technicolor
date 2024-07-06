@@ -1,14 +1,15 @@
 import { NgFor, NgIf } from "@angular/common";
 import { AfterViewInit, Component } from "@angular/core";
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
+import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
-import { MatButtonModule } from "@angular/material/button";
+import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { RouterOutlet } from "@angular/router";
 import { Subscription, first, switchMap } from "rxjs";
-import { WiFiInformation } from "../../models/thack.model";
-import { DoLoginResponse, THackService } from "../../services/thack.service";
+import { DoLoginResponse, WiFiInformation } from "../../../../electron/model";
+import { THackService } from "../../services/thack.service";
 import { startWithTap } from "../../utils/rxjs.utils";
 import { ConnectionStatusComponent } from "../connection-status/connection-status.component";
 import { TitleBarComponent } from "../title-bar/title-bar.component";
@@ -24,6 +25,7 @@ import { WiFiStatusComponent } from "../wifi-status/wifi-status.component";
     MatCardModule,
     MatInputModule,
     MatButtonModule,
+    MatSnackBarModule,
     TitleBarComponent,
     MatFormFieldModule,
     ReactiveFormsModule,
@@ -46,7 +48,10 @@ export class AppComponent implements AfterViewInit {
     password: new FormControl("", Validators.required)
   });
 
-  constructor(private thackService: THackService) { }
+  constructor(
+    private snackBar: MatSnackBar,
+    private thackService: THackService
+  ) { }
 
   ngAfterViewInit(): void {
     this.thackService.loadUserInfo()
@@ -67,11 +72,15 @@ export class AppComponent implements AfterViewInit {
         startWithTap(() => (this.wifiList = []))
       )
       .subscribe((response: DoLoginResponse) => {
+        if (!response.result) {
+          this.snackBar.open(`Login failed. ${response.errorMessage}`, "Close", { duration: 3000, panelClass: ["error-snackbar"] });
+          this.connecting = false;
+          return;
+        }
         this.connected = !!response.result;
         this.connecting = false;
 
         this.wifiList = response.wifis;
-        console.log(">>>", response.wifis);
       });
   }
 
@@ -81,9 +90,6 @@ export class AppComponent implements AfterViewInit {
         first(),
         switchMap(() => this.thackService.doLoadWifis())
       )
-      .subscribe((res) => {
-        console.log("Toggled wifi", wifiId, enable, res);
-        this.wifiList = res.wifis;
-      });
+      .subscribe((res) => (this.wifiList = res.wifis));
   }
 }

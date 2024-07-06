@@ -1,6 +1,6 @@
 import { ipcMain } from "electron";
-import { firstValueFrom, map, of, switchMap, tap } from "rxjs";
-import { ProxyEvents } from "../model";
+import { catchError, firstValueFrom, map, of, switchMap, tap } from "rxjs";
+import { DoLoginResponse, ProxyEvents } from "../model";
 import { Request } from "./request";
 import { doPbkdf2NotCoded } from "./utils/crypto-utils";
 
@@ -16,7 +16,7 @@ const _getReq = (modemIp?: string): Request => {
   return _req;
 }
 
-ipcMain.handle(ProxyEvents.DO_LOGIN, (event: Electron.IpcMainInvokeEvent, modemIp: string, username: string, password: string): Promise<any> => {
+ipcMain.handle(ProxyEvents.DO_LOGIN, (event: Electron.IpcMainInvokeEvent, modemIp: string, username: string, password: string): Promise<DoLoginResponse> => {
   const _req = _getReq(modemIp);
 
   return firstValueFrom(
@@ -38,12 +38,13 @@ ipcMain.handle(ProxyEvents.DO_LOGIN, (event: Electron.IpcMainInvokeEvent, modemI
             );
         }),
         switchMap((result) => {
-          if (!result) return of({ result, wifis: [] });
           return _req.getWifis({ cookies: _cookies, xCsrfToken: _xCsrfToken }, Array.from({ length: 51 }, (_, i) => i))
             .pipe(
-              map((res) => ({ result, wifis: res.wifis }))
+              map((res) => ({ result, wifis: res.wifis})),
+              catchError((err) => of({ result: false, wifis: [], errorMessage: err.message }))
             );
-        })
+        }),
+        catchError((err) => of({ result: false, wifis: [], errorMessage: err.message }))
       )
   );
 });
@@ -59,7 +60,7 @@ ipcMain.handle(ProxyEvents.DO_TOGGLE_WIFI, (event: Electron.IpcMainInvokeEvent, 
   );
 });
 
-ipcMain.handle(ProxyEvents.DO_LOAD_WIFIS, (event: Electron.IpcMainInvokeEvent): Promise<any> => {
+ipcMain.handle(ProxyEvents.DO_LOAD_WIFIS, (event: Electron.IpcMainInvokeEvent): Promise<DoLoginResponse> => {
   const _req = _getReq();
 
   return firstValueFrom(_req.getWifis({ cookies: _cookies, xCsrfToken: _xCsrfToken }, Array.from({ length: 51 }, (_, i) => i))

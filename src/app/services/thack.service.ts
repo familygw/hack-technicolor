@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
-import { Observable, OperatorFunction, first, from, map } from "rxjs";
-import { WiFiInformation } from "../models/thack.model";
+import { Observable, first, from, map } from "rxjs";
+import { DoLoginResponse } from "../../../electron/model";
 
 type THack = {
   doLogin: (modemIp: string, username: string, password: string) => Promise<any>;
@@ -9,13 +9,14 @@ type THack = {
   loadUserInfo: () => Promise<string>;
 };
 
-export type DoLoginResponse = { result: boolean, wifis: WiFiInformation[] };
-
 @Injectable({ providedIn: "root" })
 export class THackService {
   private get _thack(): THack { return (window as any).thack ?? {} };
 
   private _mapWifiDataMap(res: DoLoginResponse): DoLoginResponse {
+    console.trace(">>>", res);
+    if (!res.result) return res;
+
     let wifiDataInfo = Object.keys(res.wifis).map((wifiId) => ({
       wifiId: parseInt(wifiId),
       data: (res.wifis as any)[wifiId].data
@@ -54,10 +55,7 @@ export class THackService {
 
   toggleWifi(wifiId: number, wifiName: string, enable: boolean): Observable<DoLoginResponse> {
     return from(this._thack.toggleWifi(wifiId, wifiName, enable))
-      .pipe(map((res) => {
-        console.log("Toggled wifi >>>>>>>", res);
-        return this._mapWifiDataMap(res);
-      }));
+      .pipe(map(this._mapWifiDataMap));
   }
 
   doLoadWifis(): Observable<any> {

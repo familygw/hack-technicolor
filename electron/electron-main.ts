@@ -1,6 +1,7 @@
 import { BrowserWindow, app, nativeTheme } from "electron";
 import path from "path";
 import "./api/handlers";
+import { configureMenu } from "./electron-menu";
 import { ProxyEvents } from "./model";
 
 const darkBackgroundColor: string = "#282c344d";
@@ -15,7 +16,7 @@ const createWindow: () => BrowserWindow = (): BrowserWindow => {
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
-      devTools: true, //!app.isPackaged,
+      devTools: !app.isPackaged,
       webSecurity: false,
       nodeIntegration: true,
       contextIsolation: true
@@ -41,6 +42,8 @@ const createWindow: () => BrowserWindow = (): BrowserWindow => {
 
   return win;
 };
+
+configureMenu();
 
 app.on("window-all-closed", () => {
   !isMacOS && app.quit();
