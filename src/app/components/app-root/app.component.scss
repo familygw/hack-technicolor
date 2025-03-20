@@ -1,7 +1,7 @@
 @use "sass:map";
-@import "bootstrap/scss/bootstrap";
+@use "variables" as var;
 
-$border-style: solid 1px var(--bs-border-color);
+$border-style: solid 1px #{var.$gray-600};
 
 @mixin rounded($radius: 0.625rem, $sides: all) {
   border: $border-style;
@@ -15,42 +15,26 @@ $border-style: solid 1px var(--bs-border-color);
 }
 
 :host {
-  height: 100vh;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 
   .main-content {
-    gap: map.get($spacers, 4);
-    width: 100vw;
-    height: calc(100vh - 2.375rem); // remove the height of the titlebar
+    gap: map.get(var.$spacers, 4);
     display: flex;
+    padding: map.get(var.$spacers, 4);
+    flex-grow: 1;
     flex-direction: row;
 
     .sidebar {
       width: 15rem;
       display: flex;
       flex-direction: column;
-
-      > label {
-        font-size: 0.75rem;
-        & + input {
-          color: var(--bs-body-color);
-          padding: map.get($spacers, 2) map.get($spacers, 3);
-          background-color: var(--bs-body-bg);
-
-          @include rounded(0.5rem);
-
-          &:not(:last-of-type) {
-            margin-bottom: map.get($spacers, 4);
-          }
-        }
-      }
-
-      button {
-        margin-top: map.get($spacers, 4);
-      }
+      gap: map.get(var.$spacers, 4);
     }
 
     .content {
-      gap: map.get($spacers, 3);
+      gap: map.get(var.$spacers, 3);
       flex: 1;
       display: flex;
       overflow-y: auto;
@@ -58,7 +42,7 @@ $border-style: solid 1px var(--bs-border-color);
       @include rounded(0.5rem);
 
       > div.wifis-container {
-        gap: map.get($spacers, 4);
+        gap: map.get(var.$spacers, 4);
         display: flex;
         flex-wrap: wrap;
 

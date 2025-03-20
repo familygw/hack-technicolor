@@ -1,14 +1,23 @@
 <title-bar title="Technicolor Hack"></title-bar>
-<div class="main-content p-4">
+<div class="main-content">
   <div class="sidebar" [formGroup]="this.formGroup">
-    <label>Modem IP</label>
-    <input matInput formControlName="modemIp" />
-    <label>Username</label>
-    <input matInput formControlName="username" />
-    <label>Password</label>
-    <input matInput type="password" formControlName="password" />
+    <mat-form-field>
+      <mat-label>Modem IP</mat-label>
+      <input matInput formControlName="modemIp" />
+      <mat-error *ngIf="!!this.formGroup.get('modemIp')?.invalid">Please enter a valid IP address</mat-error>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Username</mat-label>
+      <input matInput formControlName="username" />
+      <mat-error *ngIf="!!this.formGroup.get('username')?.invalid">Username is required</mat-error>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Password</mat-label>
+      <input matInput type="password" formControlName="password" />
+      <mat-error *ngIf="!!this.formGroup.get('password')?.invalid">Password is required</mat-error>
+    </mat-form-field>
 
-    <button class="btn btn-success" [disabled]="!this.formGroup.valid || !!this.connected || !!this.connecting" (click)="this.doLogin()">Connect</button>
+    <button mat-stroked-button [disabled]="!this.formGroup.valid || !!this.connected || !!this.connecting" (click)="this.doLogin()">Connect</button>
   </div>
   <div class="content p-3">
     <connection-status [connected]="this.connected" [connecting]="this.connecting"></connection-status>

@@ -1,8 +1,8 @@
 @use "sass:map";
-@import "bootstrap/scss/bootstrap";
+@use "variables" as var;
 
 :host {
-  gap: map.get($spacers, 3);
+  gap: map.get(var.$spacers, 3);
   display: inline-flex;
   align-items: center;
 
@@ -11,10 +11,10 @@
     height: 1rem;
     display: inline-block;
     border-radius: 50%;
-    background-color: $danger;
+    background-color: var.$danger;
 
     &.enabled {
-      background-color: $success;
+      background-color: var.$success;
     }
   }
 }

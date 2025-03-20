@@ -1,14 +1,6 @@
-@import "bootstrap/scss/bootstrap";
-@import "@angular/material/prebuilt-themes/azure-blue.css";
+@use "@angular/material" as mat;
 
-body,
-html {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-}
-
+// Apply Angular Material 19 theme using the new approach
 html {
   font-size: 14px;
   font-family:
@@ -16,13 +8,44 @@ html {
     system-ui,
     -apple-system,
     BlinkMacSystemFont;
+
+  color-scheme: light dark;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$orange-palette,
+        theme-type: dark
+      ),
+      typography: system-ui,
+      density: 0
+    )
+  );
+
+  @include mat.button-overrides(
+    (
+      filled-container-color: orange,
+      filled-label-text-color: red
+    )
+  );
 }
 
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// Apply the theme's surface and text colors to the body
 body {
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+
+  // Keep the existing custom app variables
   --app-background-color: #ffffff4d;
-  --app-foreground-color: #282c34;
-  --bs-body-color: var(--app-foreground-color);
-  --bs-body-bg: var(--app-background-color);
+  --app-foreground-color: var(--mat-sys-on-surface);
   --mat-form-field-subscript-text-size: 10px;
   -webkit-user-select: none;
   user-select: none;
@@ -32,12 +55,14 @@ body {
   color: var(--app-foreground-color);
 }
 
+// Apply dark theme when explicitly set via attribute
 body[theme="dark"] {
-  --bs-border-color: #696e7a;
+  color-scheme: dark;
   --app-background-color: #282c344d;
   --app-foreground-color: #fff;
 }
 
+// Media query for dark color scheme
 @media (prefers-color-scheme: dark) {
   body {
     --app-background-color: #282c344d;
@@ -48,6 +73,7 @@ body[theme="dark"] {
   }
 }
 
+// Media query for light color scheme
 @media (prefers-color-scheme: light) {
   body {
     --app-background-color: #ffffff4d;
@@ -55,6 +81,7 @@ body[theme="dark"] {
   }
 }
 
+// Custom snackbar styling
 .mat-mdc-snack-bar-container {
   &.error-snackbar {
     --mdc-snackbar-container-color: var(--bs-danger);

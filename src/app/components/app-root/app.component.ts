@@ -1,28 +1,26 @@
-import { NgFor } from "@angular/common";
+import { CommonModule, NgFor } from "@angular/common";
 import { AfterViewInit, Component } from "@angular/core";
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
+import { MatDividerModule } from "@angular/material/divider";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatInputModule } from "@angular/material/input";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
-import { RouterOutlet } from "@angular/router";
 import { Subscription, first, switchMap } from "rxjs";
 import { DoLoginResponse, WiFiInformation } from "../../../../electron/model";
+import { ToggleWiFiEvent } from "../../models/thack.model";
 import { THackService } from "../../services/thack.service";
 import { startWithTap } from "../../utils/rxjs.utils";
 import { ConnectionStatusComponent } from "../connection-status/connection-status.component";
 import { TitleBarComponent } from "../title-bar/title-bar.component";
 import { WifiAntennaComponent } from "../wifi-antenna/wifi-antenna.component";
-import { ToggleWiFiEvent } from "../../models/thack.model";
-import { MatDividerModule } from "@angular/material/divider";
 
 @Component({
   selector: "app-root",
   standalone: true,
   imports: [
-    NgFor,
-    RouterOutlet,
+    CommonModule,
     MatCardModule,
     MatInputModule,
     MatDividerModule,
