@@ -1,10 +1,10 @@
-import { NgClass, NgIf } from "@angular/common";
+import { NgClass } from "@angular/common";
 import { Component, Input } from "@angular/core";
 
 @Component({
   selector: "connection-status",
   standalone: true,
-  imports: [NgIf, NgClass],
+  imports: [NgClass],
   templateUrl: "./connection-status.component.html",
   styleUrl: "./connection-status.component.scss"
 })

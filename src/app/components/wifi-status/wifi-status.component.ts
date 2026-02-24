@@ -1,10 +1,10 @@
-import { NgClass, NgIf } from "@angular/common";
+import { NgClass } from "@angular/common";
 import { Component, Input } from "@angular/core";
 
 @Component({
   selector: "wifi-status",
   standalone: true,
-  imports: [NgIf, NgClass],
+  imports: [NgClass],
   templateUrl: "./wifi-status.component.html",
   styleUrl: "./wifi-status.component.scss"
 })

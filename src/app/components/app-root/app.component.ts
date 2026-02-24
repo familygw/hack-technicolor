@@ -1,4 +1,4 @@
-import { CommonModule, NgFor } from "@angular/common";
+
 import { AfterViewInit, Component } from "@angular/core";
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
@@ -20,7 +20,6 @@ import { WifiAntennaComponent } from "../wifi-antenna/wifi-antenna.component";
   selector: "app-root",
   standalone: true,
   imports: [
-    CommonModule,
     MatCardModule,
     MatInputModule,
     MatDividerModule,
@@ -31,7 +30,7 @@ import { WifiAntennaComponent } from "../wifi-antenna/wifi-antenna.component";
     ReactiveFormsModule,
     WifiAntennaComponent,
     ConnectionStatusComponent
-  ],
+],
   templateUrl: "./app.component.html",
   styleUrl: "./app.component.scss"
 })

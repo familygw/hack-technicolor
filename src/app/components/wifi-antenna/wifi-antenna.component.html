@@ -12,8 +12,14 @@
     <div>Radio Enabled: {{ wifiInfo.data.RadioEnable }}</div>
   </mat-card-content>
   <mat-card-actions class="gap-3 p-3">
-    <button *ngIf="!!wifiInfo.data.SSIDEnable" class="btn btn-danger" (click)="this.toggleWifi.emit({ wifiInfo, action: false })">Disable</button>
-    <button *ngIf="!wifiInfo.data.SSIDEnable" class="btn btn-warning" (click)="this.toggleWifi.emit({ wifiInfo, action: false })">Update</button>
-    <button *ngIf="!wifiInfo.data.SSIDEnable" class="btn btn-success" (click)="this.toggleWifi.emit({ wifiInfo, action: true })">Enable</button>
+    @if (!!wifiInfo.data.SSIDEnable) {
+      <button class="btn btn-danger" (click)="this.toggleWifi.emit({ wifiInfo, action: false })">Disable</button>
+    }
+    @if (!wifiInfo.data.SSIDEnable) {
+      <button class="btn btn-warning" (click)="this.toggleWifi.emit({ wifiInfo, action: false })">Update</button>
+    }
+    @if (!wifiInfo.data.SSIDEnable) {
+      <button class="btn btn-success" (click)="this.toggleWifi.emit({ wifiInfo, action: true })">Enable</button>
+    }
   </mat-card-actions>
 </mat-card>
