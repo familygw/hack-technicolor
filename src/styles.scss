@@ -21,13 +21,6 @@ html {
       density: 0
     )
   );
-
-  @include mat.button-overrides(
-    (
-      filled-container-color: orange,
-      filled-label-text-color: red
-    )
-  );
 }
 
 html, body {

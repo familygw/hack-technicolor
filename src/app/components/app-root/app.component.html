@@ -1,35 +1,90 @@
 <title-bar title="Technicolor Hack"></title-bar>
 <div class="main-content">
-  <div class="sidebar" [formGroup]="this.formGroup">
-    <mat-form-field>
-      <mat-label>Modem IP</mat-label>
+  <form class="sidebar" [formGroup]="this.formGroup" (ngSubmit)="this.onSubmit()">
+    <p class="sidebar-subtitle">Accedé al panel interno para administrar todas las redes detectadas por API.</p>
+
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>IP del módem</mat-label>
       <input matInput formControlName="modemIp" />
       @if (!!this.formGroup.get('modemIp')?.invalid) {
-        <mat-error>Please enter a valid IP address</mat-error>
+        <mat-error>Ingresá una IP válida</mat-error>
       }
     </mat-form-field>
-    <mat-form-field>
-      <mat-label>Username</mat-label>
-      <input matInput formControlName="username" />
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>Usuario</mat-label>
+      <input matInput formControlName="username" [disabled]="!!this.connected || !!this.connecting" />
       @if (!!this.formGroup.get('username')?.invalid) {
-        <mat-error>Username is required</mat-error>
+        <mat-error>El usuario es obligatorio</mat-error>
       }
     </mat-form-field>
-    <mat-form-field>
-      <mat-label>Password</mat-label>
-      <input matInput type="password" formControlName="password" />
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>Contraseña</mat-label>
+      <input matInput type="password" formControlName="password" [disabled]="!!this.connected || !!this.connecting" />
+      <button
+        mat-icon-button
+        matSuffix
+        type="submit"
+        aria-label="Conectar"
+        [disabled]="!this.formGroup.valid || !!this.connected || !!this.connecting"
+      >
+        <mat-icon>{{ this.connecting ? 'sync' : 'login' }}</mat-icon>
+      </button>
       @if (!!this.formGroup.get('password')?.invalid) {
-        <mat-error>Password is required</mat-error>
+        <mat-error>La contraseña es obligatoria</mat-error>
       }
     </mat-form-field>
 
-    <button mat-stroked-button [disabled]="!this.formGroup.valid || !!this.connected || !!this.connecting" (click)="this.doLogin()">Connect</button>
-  </div>
+    <div class="summary-grid">
+      <div>
+        <span class="label">Total</span>
+        <strong>{{ this.wifiList.length }}</strong>
+      </div>
+      <div>
+        <span class="label">Activas</span>
+        <strong>{{ this.enabledCount }}</strong>
+      </div>
+      <div>
+        <span class="label">Desactivadas</span>
+        <strong>{{ this.disabledCount }}</strong>
+      </div>
+      <div>
+        <span class="label">Personal/Flow</span>
+        <strong>{{ this.personalFlowCount }}</strong>
+      </div>
+    </div>
+  </form>
+
   <div class="content p-3">
-    <connection-status [connected]="this.connected" [connecting]="this.connecting"></connection-status>
+    <div class="toolbar">
+      <connection-status [connected]="this.connected" [connecting]="this.connecting"></connection-status>
+      <div class="toolbar-actions">
+        <button mat-stroked-button [disabled]="!this.connected || this.refreshing || this.disablingAll" (click)="this.logout()">
+          <mat-icon>logout</mat-icon>
+          Logout
+        </button>
+        <button mat-stroked-button [disabled]="!this.connected || this.refreshing || this.disablingAll" (click)="this.refreshWifis()">
+          @if (this.refreshing) { Actualizando... } @else { Refrescar redes }
+        </button>
+        <button mat-flat-button class="danger-action" [disabled]="!this.connected || !this.wifiList.length || this.disablingAll || this.refreshing" (click)="this.disableAllWifi()">
+          @if (this.disablingAll) { Deshabilitando... } @else { Deshabilitar todas }
+        </button>
+      </div>
+    </div>
+
     <mat-divider></mat-divider>
+
+    @if (!this.connected) {
+      <div class="empty-state">
+        Conectate al módem para cargar la lista completa de redes visibles por API.
+      </div>
+    }
+
+    @if (!!this.connected && !this.wifiList.length) {
+      <div class="empty-state">No se encontraron redes WiFi para administrar.</div>
+    }
+
     <div class="wifis-container">
-      @for (wifi of this.wifiList; track wifi) {
+      @for (wifi of this.wifiList; track wifi.wifiId) {
         <wifi-antenna [wifiInfo]="wifi" (toggleWifi)="this.toggleWifi($event)"></wifi-antenna>
       }
     </div>

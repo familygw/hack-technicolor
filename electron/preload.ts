@@ -1,10 +1,21 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { ProxyEvents } from "./model";
-import { Observable, from } from "rxjs";
+
+const ProxyEvents = {
+  THEME_UPDATED: "theme:updated",
+  DO_LOGIN: "api:login",
+  DO_LOGOUT: "api:logout",
+  DO_LOAD_WIFIS: "api:do-load-wifis",
+  DO_TOGGLE_WIFI: "api:do-toggle-wifi",
+  DO_DISABLE_ALL_WIFI: "api:do-disable-all-wifi",
+  DO_HACK_LOGS: "api:do-hack:logs",
+  LOAD_USER_INFO: "api:load-user-info"
+} as const;
 
 contextBridge.exposeInMainWorld("thack", {
   doLogin: (modemIp: string, username: string, password: string): Promise<any> => ipcRenderer.invoke(ProxyEvents.DO_LOGIN, modemIp, username, password),
+  doLogout: (): Promise<boolean> => ipcRenderer.invoke(ProxyEvents.DO_LOGOUT),
   toggleWifi: (wifiId: number, wifiName: string, enable: boolean): Promise<any> => ipcRenderer.invoke(ProxyEvents.DO_TOGGLE_WIFI, wifiId, wifiName, enable),
+  disableAllWifi: (): Promise<any> => ipcRenderer.invoke(ProxyEvents.DO_DISABLE_ALL_WIFI),
   doLoadWifis: (): Promise<any> => ipcRenderer.invoke(ProxyEvents.DO_LOAD_WIFIS),
   loadUserInfo: (): Promise<string> => ipcRenderer.invoke(ProxyEvents.LOAD_USER_INFO)
 });

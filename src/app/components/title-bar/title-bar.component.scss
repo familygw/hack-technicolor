@@ -1,12 +1,31 @@
 :host {
   -webkit-app-region: drag;
+  flex: 0 0 38px;
+  min-height: 38px;
+  max-height: 38px;
   width: 100vw;
   height: 38px;
   margin: 0;
   display: flex;
-  align-content: center;
-  flex-wrap: wrap;
-  padding-left: 84px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 1.2rem 0 6.5rem;
+  box-sizing: border-box;
 
-  background: linear-gradient(to right, #282c34, #5f6778);
+  background: var(--mat-sys-surface-container-lowest);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  .title {
+    font-weight: 600;
+    letter-spacing: 0.02rem;
+    color: var(--mat-sys-on-surface);
+    line-height: 1;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+    color: var(--mat-sys-on-surface-variant);
+    line-height: 1;
+  }
 }

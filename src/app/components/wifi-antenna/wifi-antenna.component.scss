@@ -1,3 +1,57 @@
 :host {
-  min-width: 30%;
+  min-width: 320px;
+
+  .mat-mdc-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border-radius: 0.75rem;
+    background: var(--mat-sys-surface-container);
+
+    .mat-mdc-card-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-top: 0.25rem;
+
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        color: var(--mat-sys-on-surface-variant);
+
+        strong {
+          color: var(--mat-sys-on-surface);
+          font-weight: 600;
+          text-align: right;
+          word-break: break-all;
+        }
+      }
+
+      .detected-tag {
+        margin-top: 0.45rem;
+        border-radius: 0.5rem;
+        padding: 0.4rem 0.6rem;
+        color: var(--mat-sys-on-tertiary-container);
+        background: var(--mat-sys-tertiary-container);
+      }
+    }
+
+    .actions {
+      margin-top: auto;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+
+      .disable-btn {
+        --mdc-filled-button-container-color: var(--mat-sys-error);
+        --mdc-filled-button-label-text-color: var(--mat-sys-on-error);
+      }
+
+      .enable-btn {
+        --mdc-filled-button-container-color: var(--mat-sys-primary);
+        --mdc-filled-button-label-text-color: var(--mat-sys-on-primary);
+      }
+    }
+  }
 }

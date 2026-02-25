@@ -66,7 +66,7 @@ export class Request {
   }
 
   toggleWifiSettings(headers: LoginResponseType, wifiId: number, wifiName: string, enable: boolean): Observable<any> {
-    if (!wifiId) throw new Error("WiFi ID is required");
+    if (wifiId === undefined || wifiId === null || Number.isNaN(wifiId)) throw new Error("WiFi ID is required");
 
     const formdata = new FormData();
     ["SSIDEnable", "RadioEnable", "SSIDAdvertisementEnabled"].forEach(key => formdata.append(`${wifiId}[${key}]`, enable ? "true" : "false"));
@@ -90,8 +90,6 @@ export class Request {
       },
       ...httpsAgent
     };
-
-    console.log("Form Data:", formdata);
 
     return from(axios
       .post<any>(`/api/v1/wifi/${wifiId}`, formdata, reqOptions))
@@ -131,7 +129,7 @@ export class Request {
   }
 
   updateWifiSettings(headers: LoginResponseType, wifis: any[], rename: boolean, restore: boolean): Observable<void> {
-    if (!wifis || !wifis.length) of(undefined);
+    if (!wifis || !wifis.length) return of(undefined);
 
     const formdata = new FormData();
 
@@ -193,6 +191,23 @@ export class Request {
       }),
       map(() => undefined)
     );
+  }
+
+  disableAllDetectedWifis(headers: LoginResponseType, ids: number[] = Array.from({ length: 51 }, (_, i) => i)): Observable<void> {
+    return this.getWifis(headers, ids)
+      .pipe(
+        map((res) => {
+          const wifiDataInfo = Object.keys(res.wifis)
+            .map((wifiId) => ({
+              wifiId: parseInt(wifiId, 10),
+              data: res.wifis[wifiId]?.data
+            }))
+            .filter((wifi) => !!wifi.data);
+
+          return wifiDataInfo;
+        }),
+        switchMap((wifis) => this.updateWifiSettings(headers, wifis, false, false))
+      );
   }
 
   async applyACL(headers: LoginResponseType, wifis: any[]): Promise<void> {

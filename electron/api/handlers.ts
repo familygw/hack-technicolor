@@ -6,13 +6,18 @@ import { doPbkdf2NotCoded } from "./utils/crypto-utils";
 
 const network = require("network");
 
-let _req: Request;
-let _cookies: string;
-let _xCsrfToken: string;
+let _req: Request | undefined;
+let _cookies: string = "";
+let _xCsrfToken: string = "";
 
 const _getReq = (modemIp?: string): Request => {
-  if (!_req && !modemIp) throw new Error("Modem IP is required");
-  !_req && (_req = new Request(modemIp));
+  if (!!modemIp) {
+    _req = new Request(modemIp);
+    return _req;
+  }
+
+  if (!_req) throw new Error("Modem IP is required");
+
   return _req;
 }
 
@@ -49,13 +54,33 @@ ipcMain.handle(ProxyEvents.DO_LOGIN, (event: Electron.IpcMainInvokeEvent, modemI
   );
 });
 
+ipcMain.handle(ProxyEvents.DO_LOGOUT, (): boolean => {
+  _cookies = "";
+  _xCsrfToken = "";
+  _req = undefined;
+  return true;
+});
+
 ipcMain.handle(ProxyEvents.DO_TOGGLE_WIFI, (event: Electron.IpcMainInvokeEvent, wifiId: number, wifiName: string, enable: boolean): Promise<any> => {
   const _req = _getReq();
 
   return firstValueFrom(_req.toggleWifiSettings({ cookies: _cookies, xCsrfToken: _xCsrfToken }, wifiId, wifiName, enable)
     .pipe(
       switchMap(() => _req.getWifis({ cookies: _cookies, xCsrfToken: _xCsrfToken }, Array.from({ length: 51 }, (_, i) => i))),
-      map((res) => ({ result: true, wifis: res.wifis }))
+      map((res) => ({ result: true, wifis: res.wifis })),
+      catchError((err) => of({ result: false, wifis: [], errorMessage: err.message }))
+    )
+  );
+});
+
+ipcMain.handle(ProxyEvents.DO_DISABLE_ALL_WIFI, (event: Electron.IpcMainInvokeEvent): Promise<DoLoginResponse> => {
+  const _req = _getReq();
+
+  return firstValueFrom(_req.disableAllDetectedWifis({ cookies: _cookies, xCsrfToken: _xCsrfToken })
+    .pipe(
+      switchMap(() => _req.getWifis({ cookies: _cookies, xCsrfToken: _xCsrfToken }, Array.from({ length: 51 }, (_, i) => i))),
+      map((res) => ({ result: true, wifis: res.wifis })),
+      catchError((err) => of({ result: false, wifis: [], errorMessage: err.message }))
     )
   );
 });
@@ -65,13 +90,14 @@ ipcMain.handle(ProxyEvents.DO_LOAD_WIFIS, (event: Electron.IpcMainInvokeEvent): 
 
   return firstValueFrom(_req.getWifis({ cookies: _cookies, xCsrfToken: _xCsrfToken }, Array.from({ length: 51 }, (_, i) => i))
     .pipe(
-      map((res) => ({ result: true, wifis: res.wifis }))
+      map((res) => ({ result: true, wifis: res.wifis })),
+      catchError((err) => of({ result: false, wifis: [], errorMessage: err.message }))
     )
   );
 });
 
 ipcMain.handle(ProxyEvents.LOAD_USER_INFO, (event: Electron.IpcMainInvokeEvent): Promise<string> => {
-  const defaultIp: string = "127.0.0.1";
+  const defaultIp: string = "192.168.0.1";
 
   return new Promise((resolve, reject) => {
     network.get_gateway_ip((err: any, ip: string) => {
@@ -81,7 +107,7 @@ ipcMain.handle(ProxyEvents.LOAD_USER_INFO, (event: Electron.IpcMainInvokeEvent):
         return;
       }
 
-      resolve(ip);
+      resolve(ip || defaultIp);
     });
   });
 });

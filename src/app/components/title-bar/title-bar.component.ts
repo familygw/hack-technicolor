@@ -4,7 +4,7 @@ import { Component, Input } from "@angular/core";
   selector: "title-bar",
   standalone: true,
   imports: [],
-  template: "{{this.title}}",
+  template: "<div class='title'>{{this.title}}</div><div class='subtitle'>WiFi Control Console</div>",
   styleUrl: "./title-bar.component.scss"
 })
 export class TitleBarComponent {

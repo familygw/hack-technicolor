@@ -19,37 +19,145 @@ $border-style: solid 1px #{var.$gray-600};
   display: flex;
   flex-direction: column;
 
+  title-bar {
+    flex: 0 0 auto;
+  }
+
   .main-content {
     gap: map.get(var.$spacers, 4);
     display: flex;
     padding: map.get(var.$spacers, 4);
     flex-grow: 1;
     flex-direction: row;
+    min-height: 0;
 
     .sidebar {
-      width: 15rem;
+      width: 21rem;
       display: flex;
       flex-direction: column;
       gap: map.get(var.$spacers, 4);
+      padding: map.get(var.$spacers, 4);
+      @include rounded(0.75rem);
+      background: var(--mat-sys-surface-container-low);
+      min-height: 0;
+      overflow: hidden;
+
+      h3 {
+        margin: 0;
+        font-size: 1.15rem;
+        color: var(--mat-sys-on-surface);
+      }
+
+      .sidebar-subtitle {
+        margin: 0;
+        color: var(--mat-sys-on-surface-variant);
+        line-height: 1.25;
+      }
+
+      mat-form-field {
+        width: 100%;
+        margin-bottom: 0.1rem;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: map.get(var.$spacers, 2);
+        margin-top: auto;
+
+        > div {
+          display: flex;
+          flex-direction: column;
+          padding: map.get(var.$spacers, 2) map.get(var.$spacers, 3);
+          border-radius: 0.5rem;
+          background: var(--mat-sys-surface-container);
+
+          .label {
+            color: var(--mat-sys-on-surface-variant);
+            font-size: 0.8rem;
+          }
+
+          strong {
+            font-size: 1.1rem;
+            color: var(--mat-sys-on-surface);
+          }
+        }
+      }
     }
 
     .content {
       gap: map.get(var.$spacers, 3);
       flex: 1;
       display: flex;
+      min-width: 0;
       overflow-y: auto;
       flex-direction: column;
-      @include rounded(0.5rem);
+      @include rounded(0.75rem);
+      background: var(--mat-sys-surface-container-low);
 
-      > div.wifis-container {
-        gap: map.get(var.$spacers, 4);
+      .toolbar {
         display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: map.get(var.$spacers, 3);
         flex-wrap: wrap;
 
-        > .mat-mdc-card {
-          flex: 1 1 300px;
+        .toolbar-actions {
           display: flex;
-          flex-grow: 0;
+          gap: map.get(var.$spacers, 2);
+          flex-wrap: wrap;
+
+          button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+          }
+        }
+      }
+
+      .danger-action {
+        --mdc-filled-button-container-color: var(--mat-sys-error);
+        --mdc-filled-button-label-text-color: var(--mat-sys-on-error);
+      }
+
+      .empty-state {
+        padding: map.get(var.$spacers, 4);
+        border-radius: 0.75rem;
+        color: var(--mat-sys-on-surface-variant);
+        background: var(--mat-sys-surface-container);
+      }
+
+      > div.wifis-container {
+        gap: map.get(var.$spacers, 3);
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+
+        > .mat-mdc-card {
+          flex: 1 1 320px;
+          display: flex;
+          min-height: 200px;
+          max-width: calc(50% - #{map.get(var.$spacers, 2)});
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 980px) {
+  :host {
+    .main-content {
+      flex-direction: column;
+
+      .sidebar {
+        width: auto;
+      }
+
+      .content {
+        > div.wifis-container {
+          > .mat-mdc-card {
+            max-width: 100%;
+          }
         }
       }
     }

@@ -4,7 +4,9 @@ import { DoLoginResponse } from "../../../electron/model";
 
 type THack = {
   doLogin: (modemIp: string, username: string, password: string) => Promise<any>;
+  doLogout: () => Promise<boolean>;
   toggleWifi: (wifiId: number, wifiName: string, enable: boolean) => Promise<any>;
+  disableAllWifi: () => Promise<any>;
   doLoadWifis: () => Promise<any>;
   loadUserInfo: () => Promise<string>;
 };
@@ -28,7 +30,6 @@ export class THackService {
       wifi.data.SSIDEnable = (wifi.data.SSIDEnable === "true");
       wifi.data.WPSEnable = (wifi.data.WPSEnable === "true");
       wifi.data.RadioEnable = (wifi.data.RadioEnable === "true");
-      wifi.data.ModeEnabled = (wifi.data.ModeEnabled === "true");
     });
 
     wifiDataInfo.sort((a, b) => {
@@ -53,8 +54,18 @@ export class THackService {
       .pipe(map(this._mapWifiDataMap));
   }
 
+  doLogout(): Observable<boolean> {
+    return from(this._thack.doLogout())
+      .pipe(first());
+  }
+
   toggleWifi(wifiId: number, wifiName: string, enable: boolean): Observable<DoLoginResponse> {
     return from(this._thack.toggleWifi(wifiId, wifiName, enable))
+      .pipe(map(this._mapWifiDataMap));
+  }
+
+  disableAllWifi(): Observable<DoLoginResponse> {
+    return from(this._thack.disableAllWifi())
       .pipe(map(this._mapWifiDataMap));
   }
 

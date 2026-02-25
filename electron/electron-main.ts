@@ -17,8 +17,8 @@ const createWindow: () => BrowserWindow = (): BrowserWindow => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       devTools: !app.isPackaged,
-      webSecurity: false,
-      nodeIntegration: true,
+      webSecurity: true,
+      nodeIntegration: false,
       contextIsolation: true
     },
     show: false,
