@@ -8,7 +8,8 @@ const ProxyEvents = {
   DO_TOGGLE_WIFI: "api:do-toggle-wifi",
   DO_DISABLE_ALL_WIFI: "api:do-disable-all-wifi",
   DO_HACK_LOGS: "api:do-hack:logs",
-  LOAD_USER_INFO: "api:load-user-info"
+  LOAD_USER_INFO: "api:load-user-info",
+  WATCHDOG_STATUS: "watchdog:status"
 } as const;
 
 contextBridge.exposeInMainWorld("thack", {
@@ -17,7 +18,10 @@ contextBridge.exposeInMainWorld("thack", {
   toggleWifi: (wifiId: number, wifiName: string, enable: boolean): Promise<any> => ipcRenderer.invoke(ProxyEvents.DO_TOGGLE_WIFI, wifiId, wifiName, enable),
   disableAllWifi: (): Promise<any> => ipcRenderer.invoke(ProxyEvents.DO_DISABLE_ALL_WIFI),
   doLoadWifis: (): Promise<any> => ipcRenderer.invoke(ProxyEvents.DO_LOAD_WIFIS),
-  loadUserInfo: (): Promise<string> => ipcRenderer.invoke(ProxyEvents.LOAD_USER_INFO)
+  loadUserInfo: (): Promise<string> => ipcRenderer.invoke(ProxyEvents.LOAD_USER_INFO),
+  onWatchdogStatus: (callback: (data: any) => void) => {
+    ipcRenderer.on(ProxyEvents.WATCHDOG_STATUS, (_, data) => callback(data));
+  }
 });
 
 ipcRenderer.on("ping", (event, message) => {

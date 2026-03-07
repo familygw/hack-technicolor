@@ -1,5 +1,4 @@
 import { app, BrowserWindow, Menu, nativeImage, Tray } from "electron";
-import { ProxyEvents } from "./model";
 
 export type TrayStatus = "disconnected" | "ok" | "alert";
 
@@ -17,7 +16,7 @@ const createTrayIcon = (color: string): Electron.NativeImage => {
   return nativeImage.createFromBuffer(Buffer.from(svg));
 };
 
-export const createTray = (win: BrowserWindow): Tray => {
+export const createTray = (win: BrowserWindow, onWatchdogToggle?: () => void, onWatchdogForceCheck?: () => void): Tray => {
   tray = new Tray(createTrayIcon(colorMap.disconnected));
 
   let isPaused = false;
@@ -36,7 +35,7 @@ export const createTray = (win: BrowserWindow): Tray => {
         label: isPaused ? "Reanudar watchdog" : "Pausar watchdog",
         click: (menuItem) => {
           isPaused = !isPaused;
-          win.webContents.send(ProxyEvents.WATCHDOG_TOGGLE);
+          onWatchdogToggle?.();
           menuItem.label = isPaused ? "Reanudar watchdog" : "Pausar watchdog";
           tray?.setContextMenu(buildContextMenu());
         }
@@ -44,7 +43,7 @@ export const createTray = (win: BrowserWindow): Tray => {
       {
         label: "Forzar check",
         click: () => {
-          win.webContents.send(ProxyEvents.WATCHDOG_FORCE_CHECK);
+          onWatchdogForceCheck?.();
         }
       },
       { type: "separator" },

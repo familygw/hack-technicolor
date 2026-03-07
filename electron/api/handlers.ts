@@ -1,6 +1,7 @@
-import { ipcMain } from "electron";
+import { BrowserWindow, ipcMain } from "electron";
 import { catchError, firstValueFrom, map, of, switchMap, tap } from "rxjs";
 import { DoLoginResponse, ProxyEvents } from "../model";
+import { Watchdog } from "../watchdog";
 import { Request } from "./request";
 import { doPbkdf2NotCoded } from "./utils/crypto-utils";
 
@@ -9,6 +10,20 @@ const network = require("network");
 let _req: Request | undefined;
 let _cookies: string = "";
 let _xCsrfToken: string = "";
+let _watchdog: Watchdog | undefined;
+
+export function initWatchdog(win: BrowserWindow): Watchdog {
+  _watchdog = new Watchdog(
+    win,
+    () => _req,
+    () => ({ cookies: _cookies, xCsrfToken: _xCsrfToken })
+  );
+
+  ipcMain.on(ProxyEvents.WATCHDOG_TOGGLE, () => _watchdog?.toggle());
+  ipcMain.on(ProxyEvents.WATCHDOG_FORCE_CHECK, () => _watchdog?.forceCheck());
+
+  return _watchdog;
+}
 
 const _getReq = (modemIp?: string): Request => {
   if (!!modemIp) {
@@ -38,6 +53,10 @@ ipcMain.handle(ProxyEvents.DO_LOGIN, (event: Electron.IpcMainInvokeEvent, modemI
                 _cookies = loginResponse.cookies;
                 _xCsrfToken = loginResponse.xCsrfToken;
 
+                if (!!_cookies && !!_xCsrfToken) {
+                  _watchdog?.start();
+                }
+
                 return of(!!_cookies && !!_xCsrfToken);
               })
             );
@@ -55,6 +74,7 @@ ipcMain.handle(ProxyEvents.DO_LOGIN, (event: Electron.IpcMainInvokeEvent, modemI
 });
 
 ipcMain.handle(ProxyEvents.DO_LOGOUT, (): boolean => {
+  _watchdog?.stop();
   _cookies = "";
   _xCsrfToken = "";
   _req = undefined;

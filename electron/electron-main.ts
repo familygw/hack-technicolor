@@ -1,5 +1,6 @@
 import { BrowserWindow, app, nativeTheme } from "electron";
 import path from "path";
+import { initWatchdog } from "./api/handlers";
 import "./api/handlers";
 import { configureMenu } from "./electron-menu";
 import { ProxyEvents } from "./model";
@@ -55,7 +56,12 @@ app.on("window-all-closed", () => {
 
 app.whenReady().then(() => {
   const win = createWindow();
-  createTray(win);
+  const watchdog = initWatchdog(win);
+  createTray(
+    win,
+    () => watchdog.toggle(),
+    () => watchdog.forceCheck()
+  );
 
   win.on("close", (e) => {
     if (!isQuitting) {
