@@ -14,6 +14,25 @@
       gap: 0.45rem;
       margin-top: 0.25rem;
 
+      .band-badge {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        border-radius: 0.35rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+        width: fit-content;
+
+        &.band-5ghz {
+          background: #1565c0;
+          color: #fff;
+        }
+        &.band-24ghz {
+          background: #2e7d32;
+          color: #fff;
+        }
+      }
+
       .row {
         display: flex;
         justify-content: space-between;

@@ -7,13 +7,19 @@
   </mat-card-header>
 
   <mat-card-content>
+    <div class="band-badge" [class.band-5ghz]="is5GHz" [class.band-24ghz]="!is5GHz">
+      {{ band }}
+    </div>
     <div class="row"><span>ID</span><strong>#{{ wifiInfo.wifiId }}</strong></div>
     <div class="row"><span>BSSID</span><strong>{{ wifiInfo.data.BSSID || '-' }}</strong></div>
     <div class="row"><span>Radio</span><strong>{{ wifiInfo.data.RadioEnable ? 'On' : 'Off' }}</strong></div>
     <div class="row"><span>WPS</span><strong>{{ wifiInfo.data.WPSEnable ? 'On' : 'Off' }}</strong></div>
-    <div class="row"><span>Modo</span><strong>{{ wifiInfo.data.ModeEnabled || '-' }}</strong></div>
+    <div class="row"><span>Encriptacion</span><strong>{{ encryptionDisplay }}</strong></div>
+    <div class="row"><span>Potencia</span><strong>{{ transmitPowerDisplay }}</strong></div>
+    <div class="row"><span>Estandar</span><strong>{{ wifiInfo.data.OperatingStandards || '-' }}</strong></div>
+    <div class="row"><span>ACL</span><strong>{{ aclStatus }}</strong></div>
 
-    @if (this.isLikelyPersonalFlow) {
+    @if (isLikelyPersonalFlow) {
       <div class="detected-tag">Detectada como posible red Personal/Flow</div>
     }
   </mat-card-content>

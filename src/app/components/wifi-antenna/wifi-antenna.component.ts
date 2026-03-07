@@ -25,4 +25,33 @@ export class WifiAntennaComponent {
     const ssid = (this.wifiInfo?.data?.SSID ?? "").toLowerCase();
     return ssid.includes("personal") || ssid.includes("flow") || ssid.includes("zona wifi");
   }
+
+  get band(): string {
+    const standards = (this.wifiInfo?.data?.OperatingStandards ?? "").toLowerCase();
+    if (standards.includes("ac") || standards.includes("ax") || standards.includes("a,") || standards.includes("a-"))
+      return "5 GHz";
+    if (standards.includes("b") || standards.includes("g") || standards.includes("n"))
+      return "2.4 GHz";
+    return "?";
+  }
+
+  get is5GHz(): boolean {
+    return this.band === "5 GHz";
+  }
+
+  get encryptionDisplay(): string {
+    const mode = this.wifiInfo?.data?.ModeEnabled || "";
+    const method = this.wifiInfo?.data?.EncryptionMethod || "";
+    if (!mode) return "-";
+    return `${mode} / ${method}`;
+  }
+
+  get transmitPowerDisplay(): string {
+    return `${this.wifiInfo?.data?.TransmitPower ?? "-"}%`;
+  }
+
+  get aclStatus(): string {
+    if (!this.wifiInfo?.data?.ACLEnable) return "Off";
+    return this.wifiInfo.data.FilterAsBlackList === "true" ? "Blacklist" : "Whitelist";
+  }
 }
