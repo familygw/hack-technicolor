@@ -65,23 +65,25 @@ export class Request {
       );
   }
 
-  toggleWifiSettings(headers: LoginResponseType, wifiId: number, wifiName: string, enable: boolean): Observable<any> {
-    if (wifiId === undefined || wifiId === null || Number.isNaN(wifiId)) throw new Error("WiFi ID is required");
-
+  private _buildToggleForm(wifiId: number, wifiName: string, enable: boolean, minimal: boolean): FormData {
     const formdata = new FormData();
     ["SSIDEnable", "RadioEnable", "SSIDAdvertisementEnabled"].forEach(key => formdata.append(`${wifiId}[${key}]`, enable ? "true" : "false"));
+    formdata.append(`${wifiId}[WPSEnable]`, "false");
 
-    if (!enable) {
+    if (!enable && !minimal) {
       formdata.append(`${wifiId}[SSID]`, `${wifiName} - DISABLED`);
       formdata.append(`${wifiId}[TransmitPower]`, "25");
       formdata.append(`${wifiId}[KeyPassphrase]`, this._generateRandomPassword());
       formdata.append(`${wifiId}[ModeEnabled]`, "WPA2-Personal");
       formdata.append(`${wifiId}[EncryptionMethod]`, "AES");
-    } else
+    } else if (enable) {
       formdata.append(`${wifiId}[SSID]`, wifiName.replace(/ - DISABLED/g, ""));
+    }
 
-    formdata.append(`${wifiId}[WPSEnable]`, "false");
+    return formdata;
+  }
 
+  private _postWifiUpdate(headers: LoginResponseType, wifiId: number, formdata: FormData): Observable<any> {
     const reqOptions: AxiosRequestConfig<any> = {
       headers: {
         ...formdata.getHeaders(),
@@ -91,18 +93,34 @@ export class Request {
       ...httpsAgent
     };
 
-    return from(axios
-      .post<any>(`/api/v1/wifi/${wifiId}`, formdata, reqOptions))
-      .pipe(
-        tap((response) => {
-          Object.keys(response.data)
-            .forEach(wifiId => {
-              const wasOk = response.data[wifiId].error;
-              console.log(`Update for WiFi [${wifiId}] was [${response.data[wifiId].error}]: ${response.data[wifiId].message} ${!(wasOk === "ok") ? ` || ${JSON.stringify(response.data[wifiId].data)}` : ""}`)
-            });
-        }),
-        map(response => response.data)
-      );
+    return from(axios.post<any>(`/api/v1/wifi/${wifiId}`, formdata, reqOptions)).pipe(
+      tap((response) => {
+        Object.keys(response.data)
+          .forEach(id => {
+            const wasOk = response.data[id].error;
+            console.log(`Update for WiFi [${id}] was [${response.data[id].error}]: ${response.data[id].message} ${!(wasOk === "ok") ? ` || ${JSON.stringify(response.data[id].data)}` : ""}`)
+          });
+      }),
+      map(response => response.data)
+    );
+  }
+
+  toggleWifiSettings(headers: LoginResponseType, wifiId: number, wifiName: string, enable: boolean): Observable<any> {
+    if (wifiId === undefined || wifiId === null || Number.isNaN(wifiId)) throw new Error("WiFi ID is required");
+
+    const fullForm = this._buildToggleForm(wifiId, wifiName, enable, false);
+
+    return this._postWifiUpdate(headers, wifiId, fullForm).pipe(
+      switchMap((data) => {
+        const hasError = Object.keys(data).some(id => data[id]?.error === "error");
+        if (hasError && !enable) {
+          console.log(`WiFi [${wifiId}] failed with full params, retrying with minimal...`);
+          const minimalForm = this._buildToggleForm(wifiId, wifiName, enable, true);
+          return this._postWifiUpdate(headers, wifiId, minimalForm);
+        }
+        return of(data);
+      })
+    );
   }
 
   async turnOn24WiFi(headers: LoginResponseType): Promise<void> {
@@ -131,44 +149,31 @@ export class Request {
   updateWifiSettings(headers: LoginResponseType, wifis: any[], rename: boolean, restore: boolean): Observable<void> {
     if (!wifis || !wifis.length) return of(undefined);
 
+    const essentialKeys = new Set(["SSIDEnable", "RadioEnable", "SSIDAdvertisementEnabled", "WPSEnable", "SSID"]);
+
     const formdata = new FormData();
 
-    wifis.forEach((wifi) =>
-      // iterate keys to set default values
-      Object.keys(wifi.data).forEach(key => {
-        let value = wifi.data[key];
+    wifis.forEach((wifi) => {
+      const prefix = (wifis.length === 1) ? "" : `${wifi.wifiId}`;
 
-        switch (key) {
-          case "SSID":
-            if (!!rename && !value.toLowerCase().includes("disabled"))
-              value = `${value} - DISABLED`;
+      const appendField = (key: string, value: string) =>
+        formdata.append(prefix ? `${prefix}[${key}]` : key, value);
 
-            if (!!restore && value.toLowerCase().includes("disabled"))
-              value = replace(value, " - DISABLED", "");
-            break;
-          case "WPSEnable":
-          case "SSIDEnable":
-          case "RadioEnable":
-          case "SSIDAdvertisementEnabled":
-            value = "false";
-            break;
-          case "TransmitPower":
-            value = "25";
-            break;
-          case "KeyPassphrase":
-            value = this._generateRandomPassword();
-            break;
-          case "ModeEnabled":
-            value = "WPA2-Personal";
-            break;
-          case "EncryptionMethod":
-            value = "AES";
-            break;
-        }
+      // Always send essential disable fields
+      appendField("SSIDEnable", "false");
+      appendField("RadioEnable", "false");
+      appendField("SSIDAdvertisementEnabled", "false");
+      appendField("WPSEnable", "false");
 
-        formdata.append((wifis.length === 1) ? key : `${wifi.wifiId}[${key}]`, value);
-      })
-    );
+      // SSID rename
+      const ssid = wifi.data.SSID ?? "";
+      if (rename && !ssid.toLowerCase().includes("disabled"))
+        appendField("SSID", `${ssid} - DISABLED`);
+      else if (restore && ssid.toLowerCase().includes("disabled"))
+        appendField("SSID", replace(ssid, " - DISABLED", ""));
+      else
+        appendField("SSID", ssid);
+    });
 
     formdata.append("WifiEnable", "false");
     formdata.append("Wifi5Enable", "false");
