@@ -9,6 +9,12 @@ type THack = {
   disableAllWifi: () => Promise<any>;
   doLoadWifis: () => Promise<any>;
   loadUserInfo: () => Promise<string>;
+  saveCredentials: (modemIp: string, username: string, password: string) => Promise<boolean>;
+  loadCredentials: () => Promise<{ modemIp: string; username: string; password: string } | null>;
+  clearCredentials: () => Promise<boolean>;
+  loadSystemInfo: () => Promise<any>;
+  loadDevices: () => Promise<any>;
+  onWatchdogStatus: (callback: (data: any) => void) => void;
 };
 
 @Injectable({ providedIn: "root" })
@@ -72,5 +78,29 @@ export class THackService {
   doLoadWifis(): Observable<any> {
     return from(this._thack.doLoadWifis())
       .pipe(map(this._mapWifiDataMap));
+  }
+
+  saveCredentials(modemIp: string, username: string, password: string): Observable<boolean> {
+    return from(this._thack.saveCredentials(modemIp, username, password));
+  }
+
+  loadCredentials(): Observable<any> {
+    return from(this._thack.loadCredentials());
+  }
+
+  clearCredentials(): Observable<boolean> {
+    return from(this._thack.clearCredentials());
+  }
+
+  loadSystemInfo(): Observable<any> {
+    return from(this._thack.loadSystemInfo()).pipe(first());
+  }
+
+  loadDevices(): Observable<any> {
+    return from(this._thack.loadDevices()).pipe(first());
+  }
+
+  onWatchdogStatus(callback: (data: any) => void): void {
+    this._thack.onWatchdogStatus(callback);
   }
 }

@@ -33,6 +33,9 @@
         <mat-error>La contraseña es obligatoria</mat-error>
       }
     </mat-form-field>
+    <mat-checkbox [(ngModel)]="rememberCredentials" [ngModelOptions]="{standalone: true}" [disabled]="connected || connecting">
+      Recordar credenciales
+    </mat-checkbox>
 
     <div class="summary-grid">
       <div>
@@ -52,6 +55,17 @@
         <strong>{{ this.personalFlowCount }}</strong>
       </div>
     </div>
+
+    @if (systemInfo) {
+      <div class="system-info">
+        <div class="info-title">Modem Info</div>
+        <div class="info-row"><span>Modelo</span><strong>{{ systemInfo.ModelName || '-' }}</strong></div>
+        <div class="info-row"><span>Firmware</span><strong>{{ systemInfo.SoftwareVersion || '-' }}</strong></div>
+        <div class="info-row"><span>IP externa</span><strong>{{ systemInfo.ExternalIPAddress || '-' }}</strong></div>
+        <div class="info-row"><span>MAC</span><strong>{{ systemInfo.MACAddress || '-' }}</strong></div>
+        <div class="info-row"><span>Uptime</span><strong>{{ formatUptime(systemInfo.UpTime) }}</strong></div>
+      </div>
+    }
   </form>
 
   <div class="content p-3">

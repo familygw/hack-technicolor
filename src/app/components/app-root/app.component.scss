@@ -83,6 +83,37 @@ $border-style: solid 1px #{var.$gray-600};
           }
         }
       }
+
+      .system-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        padding: map.get(var.$spacers, 2) map.get(var.$spacers, 3);
+        border-radius: 0.5rem;
+        background: var(--mat-sys-surface-container);
+
+        .info-title {
+          font-weight: 600;
+          font-size: 0.85rem;
+          color: var(--mat-sys-on-surface);
+          margin-bottom: 0.2rem;
+        }
+
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 0.5rem;
+          font-size: 0.8rem;
+          color: var(--mat-sys-on-surface-variant);
+
+          strong {
+            color: var(--mat-sys-on-surface);
+            font-weight: 600;
+            text-align: right;
+            word-break: break-all;
+          }
+        }
+      }
     }
 
     .content {

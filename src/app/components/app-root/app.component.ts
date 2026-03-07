@@ -1,8 +1,9 @@
 
 import { AfterViewInit, Component } from "@angular/core";
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
+import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIconModule } from "@angular/material/icon";
@@ -27,8 +28,10 @@ import { WifiAntennaComponent } from "../wifi-antenna/wifi-antenna.component";
     MatButtonModule,
     MatIconModule,
     MatSnackBarModule,
+    MatCheckboxModule,
     TitleBarComponent,
     MatFormFieldModule,
+    FormsModule,
     ReactiveFormsModule,
     WifiAntennaComponent,
     ConnectionStatusComponent
@@ -44,6 +47,9 @@ export class AppComponent implements AfterViewInit {
   refreshing: boolean;
   disablingAll: boolean;
   wifiList: WiFiInformation[] = [];
+  rememberCredentials: boolean = false;
+  systemInfo: any = null;
+  loadingSystemInfo: boolean = false;
 
   formGroup: FormGroup = new FormGroup({
     modemIp: new FormControl("", Validators.required),
@@ -62,6 +68,22 @@ export class AppComponent implements AfterViewInit {
       .subscribe({
         next: (ip: string) => this.formGroup.get("modemIp")?.setValue(ip || "192.168.0.1"),
         error: () => this.formGroup.get("modemIp")?.setValue("192.168.0.1")
+      });
+
+    this.thackService.loadCredentials()
+      .pipe(first())
+      .subscribe({
+        next: (creds) => {
+          if (creds) {
+            this.formGroup.patchValue({
+              modemIp: creds.modemIp,
+              username: creds.username,
+              password: creds.password
+            });
+            this.rememberCredentials = true;
+          }
+        },
+        error: () => {}
       });
   }
 
@@ -106,6 +128,8 @@ export class AppComponent implements AfterViewInit {
     this.disablingAll = false;
     this.wifiList = [];
 
+    this.systemInfo = null;
+
     this._setAuthFieldsDisabled(false);
     this.formGroup.reset({
       modemIp,
@@ -118,13 +142,14 @@ export class AppComponent implements AfterViewInit {
     if (!this.formGroup.valid || this.connected || this.connecting) return;
 
     this.connecting = true;
+    const loginPassword = this.formGroup.get("password")?.value;
 
     !!this._loginSubs && this._loginSubs.unsubscribe();
     this._loginSubs = this.thackService
       .doLogin(
         this.formGroup.get("modemIp")?.value,
         this.formGroup.get("username")?.value,
-        this.formGroup.get("password")?.value
+        loginPassword
       )
       .pipe(
         startWithTap(() => (this.wifiList = []))
@@ -141,6 +166,23 @@ export class AppComponent implements AfterViewInit {
         this._setAuthFieldsDisabled(true);
 
         this.wifiList = response.wifis;
+
+        if (this.rememberCredentials) {
+          this.thackService.saveCredentials(
+            this.formGroup.get("modemIp")?.value,
+            this.formGroup.get("username")?.value,
+            loginPassword
+          ).pipe(first()).subscribe();
+        }
+
+        // Load system info
+        this.loadingSystemInfo = true;
+        this.thackService.loadSystemInfo()
+          .pipe(first())
+          .subscribe({
+            next: (info) => { this.systemInfo = info; this.loadingSystemInfo = false; },
+            error: () => { this.loadingSystemInfo = false; }
+          });
       });
   }
 
@@ -194,6 +236,17 @@ export class AppComponent implements AfterViewInit {
         this.wifiList = response.wifis;
         this.snackBar.open("Todas las redes detectadas fueron deshabilitadas.", "Cerrar", { duration: 2800 });
       });
+  }
+
+  formatUptime(seconds: string | number): string {
+    const s = typeof seconds === "string" ? parseInt(seconds, 10) : seconds;
+    if (isNaN(s)) return "-";
+    const days = Math.floor(s / 86400);
+    const hours = Math.floor((s % 86400) / 3600);
+    const mins = Math.floor((s % 3600) / 60);
+    if (days > 0) return `${days}d ${hours}h ${mins}m`;
+    if (hours > 0) return `${hours}h ${mins}m`;
+    return `${mins}m`;
   }
 
   toggleWifi(event: ToggleWiFiEvent): void {
