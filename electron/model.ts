@@ -44,5 +44,9 @@ export enum ProxyEvents {
   DO_TOGGLE_WIFI = "api:do-toggle-wifi",
   DO_DISABLE_ALL_WIFI = "api:do-disable-all-wifi",
   DO_HACK_LOGS = "api:do-hack:logs",
-  LOAD_USER_INFO = "api:load-user-info"
+  LOAD_USER_INFO = "api:load-user-info",
+  WATCHDOG_TOGGLE = "watchdog:toggle",
+  WATCHDOG_FORCE_CHECK = "watchdog:force-check",
+  WATCHDOG_STATUS = "watchdog:status",
+  TRAY_STATUS = "tray:status"
 }
