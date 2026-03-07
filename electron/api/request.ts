@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from "axios";
 import FormData from "form-data";
 import { replace } from "lodash";
-import { Observable, Subject, Subscription, from, map, of, switchMap, tap } from "rxjs";
+import { catchError, Observable, Subject, Subscription, from, map, of, switchMap, tap } from "rxjs";
 import { doPbkdf2NotCoded } from "./utils/crypto-utils";
 import { defaultHeaders, httpsAgent } from "./utils/http-utils";
 
@@ -248,6 +248,50 @@ export class Request {
 
     console.log("SYSTEM:", response.data);
     return response.data;
+  }
+
+  getSystemInfo(headers: LoginResponseType): Observable<any> {
+    const fields = "ModelName,HardwareVersion,SoftwareVersion,SerialNumber,UpTime,FirstUseDate,ExternalIPAddress,MACAddress";
+    const reqOptions: AxiosRequestConfig<any> = {
+      headers: {
+        ...defaultHeaders(headers.xCsrfToken, this._host),
+        "Cookie": headers.cookies
+      },
+      ...httpsAgent
+    };
+    return from(axios.get("/api/v1/session/menu", reqOptions)).pipe(
+      switchMap(() => from(axios.get(`/api/v1/system/${fields}`, reqOptions))),
+      map(response => response.data)
+    );
+  }
+
+  getConnectedDevices(headers: LoginResponseType): Observable<any> {
+    const reqOptions: AxiosRequestConfig<any> = {
+      headers: {
+        ...defaultHeaders(headers.xCsrfToken, this._host),
+        "Cookie": headers.cookies
+      },
+      ...httpsAgent
+    };
+    return from(axios.get("/api/v1/session/menu", reqOptions)).pipe(
+      switchMap(() => from(axios.get("/api/v1/host/hosts", reqOptions))),
+      map(response => response.data)
+    );
+  }
+
+  doLogout(headers: LoginResponseType): Observable<boolean> {
+    const formdata = new FormData();
+    return from(axios.post("/api/v1/session/logout", formdata, {
+      headers: {
+        ...formdata.getHeaders(),
+        ...defaultHeaders(headers.xCsrfToken, this._host),
+        "Cookie": headers.cookies
+      },
+      ...httpsAgent
+    })).pipe(
+      map(() => true),
+      catchError(() => of(true))
+    );
   }
 
   doSaltLogin(username: string): Observable<SaltLoginType> {

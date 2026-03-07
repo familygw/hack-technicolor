@@ -4,6 +4,7 @@ import { DoLoginResponse, ProxyEvents } from "../model";
 import { Watchdog } from "../watchdog";
 import { Request } from "./request";
 import { doPbkdf2NotCoded } from "./utils/crypto-utils";
+import { saveCredentials, loadCredentials, clearCredentials } from "../credentials";
 
 const network = require("network");
 
@@ -73,7 +74,12 @@ ipcMain.handle(ProxyEvents.DO_LOGIN, (event: Electron.IpcMainInvokeEvent, modemI
   );
 });
 
-ipcMain.handle(ProxyEvents.DO_LOGOUT, (): boolean => {
+ipcMain.handle(ProxyEvents.DO_LOGOUT, async (): Promise<boolean> => {
+  if (_req && _cookies && _xCsrfToken) {
+    try {
+      await firstValueFrom(_req.doLogout({ cookies: _cookies, xCsrfToken: _xCsrfToken }));
+    } catch {}
+  }
   _watchdog?.stop();
   _cookies = "";
   _xCsrfToken = "";
@@ -130,4 +136,16 @@ ipcMain.handle(ProxyEvents.LOAD_USER_INFO, (event: Electron.IpcMainInvokeEvent):
       resolve(ip || defaultIp);
     });
   });
+});
+
+ipcMain.handle(ProxyEvents.SAVE_CREDENTIALS, (_, modemIp: string, username: string, password: string) => {
+  saveCredentials({ modemIp, username, password });
+  return true;
+});
+
+ipcMain.handle(ProxyEvents.LOAD_CREDENTIALS, () => loadCredentials());
+
+ipcMain.handle(ProxyEvents.CLEAR_CREDENTIALS, () => {
+  clearCredentials();
+  return true;
 });
