@@ -9,7 +9,12 @@ const ProxyEvents = {
   DO_DISABLE_ALL_WIFI: "api:do-disable-all-wifi",
   DO_HACK_LOGS: "api:do-hack:logs",
   LOAD_USER_INFO: "api:load-user-info",
-  WATCHDOG_STATUS: "watchdog:status"
+  LOAD_SYSTEM_INFO: "api:load-system-info",
+  LOAD_DEVICES: "api:load-devices",
+  WATCHDOG_STATUS: "watchdog:status",
+  SAVE_CREDENTIALS: "credentials:save",
+  LOAD_CREDENTIALS: "credentials:load",
+  CLEAR_CREDENTIALS: "credentials:clear"
 } as const;
 
 contextBridge.exposeInMainWorld("thack", {
@@ -19,9 +24,14 @@ contextBridge.exposeInMainWorld("thack", {
   disableAllWifi: (): Promise<any> => ipcRenderer.invoke(ProxyEvents.DO_DISABLE_ALL_WIFI),
   doLoadWifis: (): Promise<any> => ipcRenderer.invoke(ProxyEvents.DO_LOAD_WIFIS),
   loadUserInfo: (): Promise<string> => ipcRenderer.invoke(ProxyEvents.LOAD_USER_INFO),
+  loadSystemInfo: (): Promise<any> => ipcRenderer.invoke(ProxyEvents.LOAD_SYSTEM_INFO),
+  loadDevices: (): Promise<any> => ipcRenderer.invoke(ProxyEvents.LOAD_DEVICES),
   onWatchdogStatus: (callback: (data: any) => void) => {
     ipcRenderer.on(ProxyEvents.WATCHDOG_STATUS, (_, data) => callback(data));
-  }
+  },
+  saveCredentials: (modemIp: string, username: string, password: string): Promise<boolean> => ipcRenderer.invoke(ProxyEvents.SAVE_CREDENTIALS, modemIp, username, password),
+  loadCredentials: (): Promise<any> => ipcRenderer.invoke(ProxyEvents.LOAD_CREDENTIALS),
+  clearCredentials: (): Promise<boolean> => ipcRenderer.invoke(ProxyEvents.CLEAR_CREDENTIALS)
 });
 
 ipcRenderer.on("ping", (event, message) => {

@@ -122,6 +122,20 @@ ipcMain.handle(ProxyEvents.DO_LOAD_WIFIS, (event: Electron.IpcMainInvokeEvent): 
   );
 });
 
+ipcMain.handle(ProxyEvents.LOAD_SYSTEM_INFO, async (): Promise<any> => {
+  const _req = _getReq();
+  return firstValueFrom(_req.getSystemInfo({ cookies: _cookies, xCsrfToken: _xCsrfToken })
+    .pipe(catchError(() => of(null)))
+  );
+});
+
+ipcMain.handle(ProxyEvents.LOAD_DEVICES, async (): Promise<any> => {
+  const _req = _getReq();
+  return firstValueFrom(_req.getConnectedDevices({ cookies: _cookies, xCsrfToken: _xCsrfToken })
+    .pipe(catchError(() => of(null)))
+  );
+});
+
 ipcMain.handle(ProxyEvents.LOAD_USER_INFO, (event: Electron.IpcMainInvokeEvent): Promise<string> => {
   const defaultIp: string = "192.168.0.1";
 
