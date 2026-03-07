@@ -69,6 +69,9 @@
   </form>
 
   <div class="content p-3">
+    @if (connecting || refreshing || disablingAll) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
     <div class="toolbar">
       <connection-status [connected]="this.connected" [connecting]="this.connecting"></connection-status>
       <div class="toolbar-actions">
@@ -87,7 +90,23 @@
 
     <mat-divider></mat-divider>
 
-    @if (!this.connected) {
+    @if (connecting && !wifiList.length) {
+      <div class="wifis-container">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <mat-card class="skeleton-card">
+            <mat-card-content>
+              <div class="skeleton-line w-60"></div>
+              <div class="skeleton-line w-40"></div>
+              <div class="skeleton-line w-80"></div>
+              <div class="skeleton-line w-50"></div>
+              <div class="skeleton-line w-60"></div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    }
+
+    @if (!this.connected && !this.connecting) {
       <div class="empty-state">
         Conectate al módem para cargar la lista completa de redes visibles por API.
       </div>
@@ -99,7 +118,7 @@
 
     <div class="wifis-container">
       @for (wifi of this.wifiList; track wifi.wifiId) {
-        <wifi-antenna [wifiInfo]="wifi" (toggleWifi)="this.toggleWifi($event)"></wifi-antenna>
+        <wifi-antenna [wifiInfo]="wifi" [toggling]="togglingWifiIds.has(wifi.wifiId)" (toggleWifi)="this.toggleWifi($event)"></wifi-antenna>
       }
     </div>
   </div>

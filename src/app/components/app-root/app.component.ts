@@ -8,6 +8,7 @@ import { MatDividerModule } from "@angular/material/divider";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from "@angular/material/input";
+import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { MatSnackBar, MatSnackBarModule } from "@angular/material/snack-bar";
 import { Subscription, first, switchMap } from "rxjs";
 import { DoLoginResponse, WiFiInformation } from "../../../../electron/model";
@@ -29,6 +30,7 @@ import { WifiAntennaComponent } from "../wifi-antenna/wifi-antenna.component";
     MatIconModule,
     MatSnackBarModule,
     MatCheckboxModule,
+    MatProgressBarModule,
     TitleBarComponent,
     MatFormFieldModule,
     FormsModule,
@@ -50,6 +52,7 @@ export class AppComponent implements AfterViewInit {
   rememberCredentials: boolean = false;
   systemInfo: any = null;
   loadingSystemInfo: boolean = false;
+  togglingWifiIds: Set<number> = new Set();
 
   formGroup: FormGroup = new FormGroup({
     modemIp: new FormControl("", Validators.required),
@@ -221,6 +224,7 @@ export class AppComponent implements AfterViewInit {
 
   disableAllWifi(): void {
     if (!this.connected || this.disablingAll) return;
+    if (!confirm(`Se van a deshabilitar ${this.enabledCount} redes WiFi activas. ¿Continuar?`)) return;
 
     this.disablingAll = true;
     this.thackService.disableAllWifi()
@@ -252,17 +256,19 @@ export class AppComponent implements AfterViewInit {
   toggleWifi(event: ToggleWiFiEvent): void {
     if (!this.connected) return;
 
+    this.togglingWifiIds.add(event.wifiInfo.wifiId);
+
     this.thackService.toggleWifi(event.wifiInfo.wifiId, event.wifiInfo.data.SSID, event.action)
       .pipe(
         first(),
         switchMap(() => this.thackService.doLoadWifis())
       )
       .subscribe((response: DoLoginResponse) => {
+        this.togglingWifiIds.delete(event.wifiInfo.wifiId);
         if (!response.result) {
           this.snackBar.open(`No se pudo actualizar la red. ${response.errorMessage ?? ""}`, "Cerrar", { duration: 3000, panelClass: ["error-snackbar"] });
           return;
         }
-
         this.wifiList = response.wifis;
       });
   }

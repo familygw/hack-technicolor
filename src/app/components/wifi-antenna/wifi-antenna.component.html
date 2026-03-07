@@ -1,4 +1,9 @@
 <mat-card>
+  @if (toggling) {
+    <div class="card-overlay">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+  }
   <mat-card-header>
     <mat-card-title>{{ wifiInfo.data.SSID || ('WiFi #' + wifiInfo.wifiId) }}</mat-card-title>
     <mat-card-subtitle>

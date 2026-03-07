@@ -125,6 +125,15 @@ $border-style: solid 1px #{var.$gray-600};
       flex-direction: column;
       @include rounded(0.75rem);
       background: var(--mat-sys-surface-container-low);
+      position: relative;
+
+      mat-progress-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+      }
 
       .toolbar {
         display: flex;
@@ -158,6 +167,35 @@ $border-style: solid 1px #{var.$gray-600};
         background: var(--mat-sys-surface-container);
       }
 
+      .skeleton-card {
+        min-height: 200px;
+        flex: 1 1 320px;
+        max-width: calc(50% - #{map.get(var.$spacers, 2)});
+        border-radius: 0.75rem;
+
+        .skeleton-line {
+          height: 1rem;
+          border-radius: 0.25rem;
+          background: linear-gradient(90deg,
+            var(--mat-sys-surface-container) 25%,
+            var(--mat-sys-surface-container-high) 50%,
+            var(--mat-sys-surface-container) 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+          margin-bottom: 0.6rem;
+
+          &.w-80 { width: 80%; }
+          &.w-60 { width: 60%; }
+          &.w-50 { width: 50%; }
+          &.w-40 { width: 40%; }
+        }
+      }
+
+      @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
       > div.wifis-container {
         gap: map.get(var.$spacers, 3);
         display: flex;
@@ -169,6 +207,27 @@ $border-style: solid 1px #{var.$gray-600};
           display: flex;
           min-height: 200px;
           max-width: calc(50% - #{map.get(var.$spacers, 2)});
+        }
+
+        wifi-antenna {
+          animation: fadeSlideIn 0.3s ease-out both;
+        }
+
+        @for $i from 1 through 20 {
+          wifi-antenna:nth-child(#{$i}) {
+            animation-delay: #{$i * 0.05}s;
+          }
+        }
+
+        @keyframes fadeSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       }
     }

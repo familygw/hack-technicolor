@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { MatCardModule } from "@angular/material/card";
 import { MatButtonModule } from "@angular/material/button";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { WiFiStatusComponent } from "../wifi-status/wifi-status.component";
 
 import { WiFiInformation } from "../../../../electron/model";
@@ -12,6 +13,7 @@ import { ToggleWiFiEvent } from "../../models/thack.model";
   imports: [
     MatCardModule,
     MatButtonModule,
+    MatProgressSpinnerModule,
     WiFiStatusComponent
 ],
   templateUrl: "./wifi-antenna.component.html",
@@ -19,6 +21,7 @@ import { ToggleWiFiEvent } from "../../models/thack.model";
 })
 export class WifiAntennaComponent {
   @Input() wifiInfo: WiFiInformation;
+  @Input() toggling: boolean = false;
   @Output() toggleWifi: EventEmitter<ToggleWiFiEvent> = new EventEmitter<ToggleWiFiEvent>();
 
   get isLikelyPersonalFlow(): boolean {
