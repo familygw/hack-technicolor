@@ -53,6 +53,8 @@ export class AppComponent implements AfterViewInit {
   systemInfo: any = null;
   loadingSystemInfo: boolean = false;
   togglingWifiIds: Set<number> = new Set();
+  watchdogActive: boolean = false;
+  lastWatchdogCheck: Date | null = null;
 
   formGroup: FormGroup = new FormGroup({
     modemIp: new FormControl("", Validators.required),
@@ -132,6 +134,8 @@ export class AppComponent implements AfterViewInit {
     this.wifiList = [];
 
     this.systemInfo = null;
+    this.watchdogActive = false;
+    this.lastWatchdogCheck = null;
 
     this._setAuthFieldsDisabled(false);
     this.formGroup.reset({
@@ -186,6 +190,18 @@ export class AppComponent implements AfterViewInit {
             next: (info) => { this.systemInfo = info; this.loadingSystemInfo = false; },
             error: () => { this.loadingSystemInfo = false; }
           });
+
+        // Subscribe to watchdog events
+        this.thackService.onWatchdogStatus((data: any) => {
+          if (data.acted) {
+            this.snackBar.open(`Watchdog: ${data.count} red(es) desactivada(s)`, "OK", { duration: 4000 });
+            this.refreshWifis();
+          }
+          if (data.running !== undefined) {
+            this.watchdogActive = data.running && !data.paused;
+          }
+          this.lastWatchdogCheck = new Date();
+        });
       });
   }
 

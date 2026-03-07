@@ -74,6 +74,11 @@
     }
     <div class="toolbar">
       <connection-status [connected]="this.connected" [connecting]="this.connecting"></connection-status>
+      @if (connected) {
+        <span class="watchdog-badge" [class.active]="watchdogActive">
+          {{ watchdogActive ? 'Watchdog activo' : 'Watchdog pausado' }}
+        </span>
+      }
       <div class="toolbar-actions">
         <button mat-stroked-button [disabled]="!this.connected || this.refreshing || this.disablingAll" (click)="this.logout()">
           <mat-icon>logout</mat-icon>

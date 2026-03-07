@@ -142,6 +142,31 @@ $border-style: solid 1px #{var.$gray-600};
         gap: map.get(var.$spacers, 3);
         flex-wrap: wrap;
 
+        .watchdog-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          padding: 0.25rem 0.65rem;
+          border-radius: 1rem;
+          font-size: 0.78rem;
+          font-weight: 500;
+          background: var(--mat-sys-surface-container-high);
+          color: var(--mat-sys-on-surface-variant);
+
+          &.active {
+            background: #198754;
+            color: #fff;
+          }
+
+          &::before {
+            content: '';
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: currentColor;
+          }
+        }
+
         .toolbar-actions {
           display: flex;
           gap: map.get(var.$spacers, 2);
