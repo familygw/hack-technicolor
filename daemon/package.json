@@ -1,0 +1,17 @@
+{
+  "name": "technicolor-wifi-zone-daemon",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lightweight Raspberry Pi daemon to pulse-enable and disable Personal WiFi Zone on Technicolor CGA4233 modems.",
+  "main": "technicolor-wifi-zone-daemon.js",
+  "scripts": {
+    "start": "node technicolor-wifi-zone-daemon.js",
+    "once": "node technicolor-wifi-zone-daemon.js --once",
+    "help": "node technicolor-wifi-zone-daemon.js --help"
+  },
+  "dependencies": {
+    "axios": "^1.14.1",
+    "form-data": "^4.0.5",
+    "sjcl": "^1.0.9"
+  }
+}

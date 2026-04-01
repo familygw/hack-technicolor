@@ -116,7 +116,61 @@ npm run electron:build
 
 # Package the desktop app into release/
 npm run electron:package
+
+# Headless daemon for Raspberry Pi
+npm run daemon:wifi-zone -- --help
 ```
+
+## Raspberry Pi Daemon
+
+This repository also includes a small Node.js daemon for a Raspberry Pi that performs the modem sequence required to disable ISP-managed WiFi reliably:
+
+1. Login to the modem.
+2. Find the target WiFi network.
+3. Send `enable`.
+4. Wait a few seconds.
+5. Send `disable`.
+6. Logout.
+
+Files:
+
+- `daemon/technicolor-wifi-zone-daemon.js`: long-running service with an hourly scheduler.
+- `daemon/package.json`: minimal runtime dependencies for the Raspberry Pi daemon.
+- `daemon/technicolor-wifi-zone.service`: `systemd` unit template.
+- `daemon/technicolor-wifi-zone.env.example`: environment variables example.
+- `daemon/upload-to-raspi.sh`: copies the daemon folder to the Raspberry Pi over SSH.
+- `daemon/install-on-raspi.sh`: installs dependencies and enables the `systemd` service on the Raspberry Pi.
+
+The daemon does not hardcode credentials. Copy the example env file on the Raspberry Pi, fill in the modem values there, and point the `systemd` unit to that file.
+
+Local dry-run examples:
+
+```bash
+# Show usage
+npm run daemon:wifi-zone -- --help
+
+# Run one cycle with your shell environment
+MODEM_IP=172.18.40.1 \
+MODEM_USERNAME=custadmin \
+MODEM_PASSWORD='your-password' \
+TARGET_SSID_PREFIXES='personal,flow,zona wifi' \
+INITIAL_DELAY_MINUTES=15 \
+npm run daemon:wifi-zone -- --once
+```
+
+Suggested Raspberry Pi deployment layout:
+
+```bash
+./daemon/upload-to-raspi.sh
+
+ssh pi3admin@pi3server.local
+cd ~/technicolor-wifi-zone-deploy/daemon
+cp technicolor-wifi-zone.env.example technicolor-wifi-zone.env
+nano technicolor-wifi-zone.env
+./install-on-raspi.sh
+```
+
+Adjust `EnvironmentFile`, `WorkingDirectory`, and `ExecStart` in the service file if your Raspberry Pi uses a different install path or Node binary.
 
 ## Packaging
 

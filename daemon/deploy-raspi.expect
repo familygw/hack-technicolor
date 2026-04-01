@@ -1,0 +1,92 @@
+#!/usr/bin/expect -f
+
+set timeout 300
+
+proc require_env {name} {
+  if {![info exists ::env($name)] || $::env($name) eq ""} {
+    puts stderr "Missing required environment variable: $name"
+    exit 2
+  }
+}
+
+proc wait_prompt {} {
+  expect -re {.*[#$] $}
+}
+
+require_env SSH_HOST
+require_env SSH_USER
+require_env SSH_PASS
+require_env SUDO_PASS
+require_env MODEM_IP
+require_env MODEM_USERNAME
+require_env MODEM_PASSWORD
+
+set remote_target [expr {[info exists ::env(REMOTE_TARGET_DIR)] && $::env(REMOTE_TARGET_DIR) ne "" ? $::env(REMOTE_TARGET_DIR) : "/opt/technicolor-wifi-zone/daemon"}]
+set local_daemon_dir [expr {[info exists ::env(LOCAL_DAEMON_DIR)] && $::env(LOCAL_DAEMON_DIR) ne "" ? $::env(LOCAL_DAEMON_DIR) : "./daemon"}]
+set remote_upload_dir [expr {[info exists ::env(REMOTE_UPLOAD_DIR)] && $::env(REMOTE_UPLOAD_DIR) ne "" ? $::env(REMOTE_UPLOAD_DIR) : "~/technicolor-wifi-zone-deploy"}]
+set target_wifi_ids [expr {[info exists ::env(TARGET_WIFI_IDS)] && $::env(TARGET_WIFI_IDS) ne "" ? $::env(TARGET_WIFI_IDS) : ""}]
+set target_ssid_prefixes [expr {[info exists ::env(TARGET_SSID_PREFIXES)] && $::env(TARGET_SSID_PREFIXES) ne "" ? $::env(TARGET_SSID_PREFIXES) : "personal,flow,zona wifi"}]
+set target_ssid_matchers [expr {[info exists ::env(TARGET_SSID_MATCHERS)] && $::env(TARGET_SSID_MATCHERS) ne "" ? $::env(TARGET_SSID_MATCHERS) : ""}]
+set interval_minutes [expr {[info exists ::env(CHECK_INTERVAL_MINUTES)] && $::env(CHECK_INTERVAL_MINUTES) ne "" ? $::env(CHECK_INTERVAL_MINUTES) : "60"}]
+set enable_disable_delay_ms [expr {[info exists ::env(ENABLE_DISABLE_DELAY_MS)] && $::env(ENABLE_DISABLE_DELAY_MS) ne "" ? $::env(ENABLE_DISABLE_DELAY_MS) : "5000"}]
+set request_timeout_ms [expr {[info exists ::env(REQUEST_TIMEOUT_MS)] && $::env(REQUEST_TIMEOUT_MS) ne "" ? $::env(REQUEST_TIMEOUT_MS) : "15000"}]
+set wifi_update_timeout_ms [expr {[info exists ::env(WIFI_UPDATE_TIMEOUT_MS)] && $::env(WIFI_UPDATE_TIMEOUT_MS) ne "" ? $::env(WIFI_UPDATE_TIMEOUT_MS) : "45000"}]
+set run_on_start [expr {[info exists ::env(RUN_ON_START)] && $::env(RUN_ON_START) ne "" ? $::env(RUN_ON_START) : "true"}]
+set dry_run [expr {[info exists ::env(DRY_RUN)] && $::env(DRY_RUN) ne "" ? $::env(DRY_RUN) : "false"}]
+
+set remote_host "$::env(SSH_USER)@$::env(SSH_HOST)"
+set env_lines [list \
+  "MODEM_IP=$::env(MODEM_IP)" \
+  "MODEM_USERNAME=$::env(MODEM_USERNAME)" \
+  "MODEM_PASSWORD=$::env(MODEM_PASSWORD)" \
+  "TARGET_SSID_PREFIXES=$target_ssid_prefixes" \
+  "TARGET_SSID_MATCHERS=$target_ssid_matchers" \
+  "TARGET_WIFI_IDS=$target_wifi_ids" \
+  "CHECK_INTERVAL_MINUTES=$interval_minutes" \
+  "RUN_ON_START=$run_on_start" \
+  "ENABLE_DISABLE_DELAY_MS=$enable_disable_delay_ms" \
+  "REQUEST_TIMEOUT_MS=$request_timeout_ms" \
+  "WIFI_UPDATE_TIMEOUT_MS=$wifi_update_timeout_ms" \
+  "DRY_RUN=$dry_run"]
+
+spawn scp -o StrictHostKeyChecking=accept-new -r $local_daemon_dir $remote_host:$remote_upload_dir
+expect {
+  "password:" { send "$::env(SSH_PASS)\r"; exp_continue }
+  eof
+}
+
+spawn ssh -tt -o StrictHostKeyChecking=accept-new $remote_host
+expect "password:"
+send "$::env(SSH_PASS)\r"
+wait_prompt
+
+send "sudo -k mkdir -p $remote_target\r"
+expect -re {\[sudo\].*password.*:}
+send "$::env(SUDO_PASS)\r"
+wait_prompt
+
+send "sudo rm -rf $remote_target/*\r"
+wait_prompt
+send "sudo cp -R $remote_upload_dir/. $remote_target/\r"
+wait_prompt
+send "cd $remote_target && sudo npm ci --omit=dev\r"
+wait_prompt
+
+set print_command "printf '%s\\n'"
+foreach line $env_lines {
+  append print_command " '" $line "'"
+}
+append print_command " | sudo tee $remote_target/technicolor-wifi-zone.env >/dev/null"
+send "$print_command\r"
+wait_prompt
+
+send "sudo cp $remote_target/technicolor-wifi-zone.service /etc/systemd/system/technicolor-wifi-zone.service\r"
+wait_prompt
+send "sudo systemctl daemon-reload\r"
+wait_prompt
+send "sudo systemctl enable --now technicolor-wifi-zone.service\r"
+wait_prompt
+send "sudo systemctl status technicolor-wifi-zone.service --no-pager --lines=20\r"
+wait_prompt
+send "exit\r"
+expect eof

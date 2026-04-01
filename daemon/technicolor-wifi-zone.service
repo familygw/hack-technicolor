@@ -1,0 +1,17 @@
+[Unit]
+Description=Technicolor WiFi Zone hourly modem pulse
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/technicolor-wifi-zone/daemon
+EnvironmentFile=/opt/technicolor-wifi-zone/daemon/technicolor-wifi-zone.env
+ExecStart=/usr/bin/env node /opt/technicolor-wifi-zone/daemon/technicolor-wifi-zone-daemon.js
+Restart=always
+RestartSec=15
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
